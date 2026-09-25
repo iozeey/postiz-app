@@ -1,7 +1,8 @@
 import { Metadata } from 'next';
 import { Agent } from '@gitroom/frontend/components/agents/agent';
+import { BRAND } from '@gitroom/frontend/brand';
 export const metadata: Metadata = {
-  title: 'Postiz - Agent',
+  title: `${BRAND} - Agent`,
   description: 'agents',
 };
 export default async function Layout({
