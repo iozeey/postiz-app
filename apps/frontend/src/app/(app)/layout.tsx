@@ -1,5 +1,20 @@
 import { SentryComponent } from '@gitroom/frontend/components/layout/sentry.component';
 
+// Analytics domains follow the environment. Defaulting to the production
+// host would report local and staging traffic into the live property.
+const analyticsHost = (() => {
+  if (process.env.NEXT_PUBLIC_ANALYTICS_DOMAIN) {
+    return process.env.NEXT_PUBLIC_ANALYTICS_DOMAIN;
+  }
+  try {
+    return new URL(process.env.FRONTEND_URL ?? '').hostname;
+  } catch {
+    return '';
+  }
+})();
+
+const plausibleHost = process.env.NEXT_PUBLIC_PLAUSIBLE_DOMAIN || analyticsHost;
+
 export const dynamic = 'force-dynamic';
 import '../global.scss';
 import 'react-tooltip/dist/react-tooltip.css';
@@ -41,10 +56,10 @@ export default async function AppLayout({ children }: { children: ReactNode }) {
     <html>
       <head>
         <link rel="icon" href="/favicon.ico" sizes="any" />
-        {!!process.env.DATAFAST_WEBSITE_ID && (
+        {!!process.env.DATAFAST_WEBSITE_ID && !!analyticsHost && (
           <Script
             data-website-id={process.env.DATAFAST_WEBSITE_ID}
-            data-domain="postiz.com"
+            data-domain={analyticsHost}
             src="https://datafa.st/js/script.js"
             strategy="afterInteractive"
           />
@@ -108,7 +123,7 @@ export default async function AppLayout({ children }: { children: ReactNode }) {
             <FacebookComponent />
             <GoogleTagManagerComponent gtmId={process.env.NEXT_PUBLIC_GTM_ID} />
             <Plausible
-              domain={!!process.env.IS_GENERAL ? 'postiz.com' : 'gitroom.com'}
+              domain={plausibleHost}
             >
               <PHProvider
                 phkey={process.env.NEXT_PUBLIC_POSTHOG_KEY}

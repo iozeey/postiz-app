@@ -1,0 +1,88 @@
+# Staging — app-stage.the brand.com. Paste into Dokploy's staging environment.
+# Do not commit real values.
+#
+# Image is built from this fork:
+#   docker build --target dist -f Dockerfile.dev \
+#     --build-arg # Name and motto shown in the app. Kept out of source so the fork carries
+# no brand literals. NEXT_PUBLIC_* are BUILD ARGS — see env/README.md.
+NEXT_PUBLIC_BRAND_NAME="Your Brand"
+NEXT_PUBLIC_BRAND_MOTTO="Your tagline here"
+NEXT_PUBLIC_SITE_URL="https://stage.example.com"
+NEXT_PUBLIC_TERMS_URL=https://stage.example.com/terms \
+#     --build-arg NEXT_PUBLIC_PRIVACY_URL=https://stage.example.com/privacy-policy \
+#     -t yourbrand/postiz .
+
+# === Required
+DATABASE_URL="postgresql://postiz-user:CHANGE_ME@postiz-postgres:5432/postiz-db-stage"
+REDIS_URL="redis://postiz-redis:6379"
+TEMPORAL_ADDRESS="temporal:7233"
+JWT_SECRET="CHANGE_ME — openssl rand -hex 48, and never reuse the local one"
+
+# === URLs. Single domain: nginx inside the image fronts both apps on 5000,
+# so the backend is reached at /api and internally on localhost:3000.
+MAIN_URL="https://app-stage.example.com"
+FRONTEND_URL="https://app-stage.example.com"
+NEXT_PUBLIC_BACKEND_URL="https://app-stage.example.com/api"
+BACKEND_INTERNAL_URL="http://localhost:3000"
+
+IS_GENERAL="true"
+
+# NOT_SECURED is deliberately ABSENT. Setting it here would strip secure and
+# httpOnly from the auth cookie on a public host. See env/README.md.
+
+# === Storage. R2 rather than local disk: uploads on a container volume die
+# with the container, and Cloudflare is already in front of this domain.
+STORAGE_PROVIDER="cloudflare"
+CLOUDFLARE_ACCOUNT_ID="CHANGE_ME"
+CLOUDFLARE_ACCESS_KEY="CHANGE_ME"
+CLOUDFLARE_SECRET_ACCESS_KEY="CHANGE_ME"
+CLOUDFLARE_BUCKETNAME="uploads-stage"
+CLOUDFLARE_BUCKET_URL="https://CHANGE_ME.r2.cloudflarestorage.com/"
+CLOUDFLARE_REGION="auto"
+
+# Staging should not accept public signups.
+DISABLE_REGISTRATION=true
+API_LIMIT=30
+
+# === Branding.
+# TERMS/PRIVACY are build args (client component) — listed here only so the
+# full config is visible in one place. Changing them needs an image rebuild.
+NEXT_PUBLIC_TERMS_URL="https://stage.example.com/terms"
+NEXT_PUBLIC_PRIVACY_URL="https://stage.example.com/privacy-policy"
+NEXT_PUBLIC_PLAUSIBLE_DOMAIN="app.the brand.com"
+NEXT_PUBLIC_ANALYTICS_DOMAIN="app.the brand.com"
+
+# === Transactional email. Setting RESEND_API_KEY turns on account activation,
+# so new signups must confirm their address before the account works.
+RESEND_API_KEY="CHANGE_ME"
+EMAIL_FROM_ADDRESS="noreply@example.com"
+EMAIL_FROM_NAME="the brand"
+
+# === Social platforms.
+# Each provider's redirect URI must be <FRONTEND_URL>/integrations/social/<name>
+# and be registered with that platform, e.g.
+#   https://app-stage.example.com/integrations/social/facebook
+# Use a SEPARATE Meta app for staging. Sharing the production app
+# means staging redirect URIs must be whitelisted on the live app,
+# and a staging mistake can get the production app restricted.
+FACEBOOK_APP_ID="CHANGE_ME"
+FACEBOOK_APP_SECRET="CHANGE_ME"
+X_API_KEY=""
+X_API_SECRET=""
+LINKEDIN_CLIENT_ID=""
+LINKEDIN_CLIENT_SECRET=""
+TIKTOK_CLIENT_ID=""
+TIKTOK_CLIENT_SECRET=""
+YOUTUBE_CLIENT_ID=""
+YOUTUBE_CLIENT_SECRET=""
+THREADS_APP_ID=""
+THREADS_APP_SECRET=""
+PINTEREST_CLIENT_ID=""
+PINTEREST_CLIENT_SECRET=""
+
+# === Billing
+STRIPE_PUBLISHABLE_KEY=""
+STRIPE_SECRET_KEY=""
+STRIPE_SIGNING_KEY=""
+STRIPE_SIGNING_KEY_CONNECT=""
+FEE_AMOUNT=0.05

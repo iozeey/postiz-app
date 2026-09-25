@@ -38,6 +38,13 @@ type Inputs = {
   providerToken: string;
   provider: string;
 };
+// Legal links follow the environment via the marketing site URL. No default
+// to production: a staging build must not link users to live terms.
+const siteUrl = process.env.NEXT_PUBLIC_SITE_URL ?? '';
+const termsUrl = process.env.NEXT_PUBLIC_TERMS_URL || (siteUrl ? `${siteUrl}/terms` : '');
+const privacyUrl =
+  process.env.NEXT_PUBLIC_PRIVACY_URL || (siteUrl ? `${siteUrl}/privacy-policy` : '');
+
 export function Register() {
   const getQuery = useSearchParams();
   const fetch = useFetch();
@@ -228,7 +235,7 @@ export function RegisterAfter({
                 )}
                 &nbsp;
                 <a
-                  href={`https://postiz.com/terms`}
+                  href={termsUrl}
                   className="underline hover:font-bold"
                   rel="nofollow"
                 >
@@ -237,7 +244,7 @@ export function RegisterAfter({
                 &nbsp;
                 {t('and', 'and')}&nbsp;
                 <a
-                  href={`https://postiz.com/privacy`}
+                  href={privacyUrl}
                   rel="nofollow"
                   className="underline hover:font-bold"
                 >
