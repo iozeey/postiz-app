@@ -1,0 +1,58 @@
+# Local development — copy to .env at the repo root.
+#
+#   cp env/local.example .env
+#   docker compose -f docker-compose.local.yaml up -d
+#   pnpm run prisma-db-push     # first run only
+#   pnpm run dev-backend
+#
+# Ports are shifted off the Postiz defaults because 5432, 6379, 3000 and 8080
+# are taken on this machine by the native postgres, aihr-* and cmobiler stacks.
+
+# === Required
+DATABASE_URL="postgresql://postiz-local:postiz-local-pwd@localhost:5442/postiz-db-local"
+REDIS_URL="redis://localhost:6389"
+TEMPORAL_ADDRESS="localhost:7233"
+JWT_SECRET="generate one: openssl rand -hex 48"
+
+# === URLs. Backend on 3001 because aihr-frontend holds 3000.
+PORT=3001
+MAIN_URL="http://localhost:4200"
+FRONTEND_URL="http://localhost:4200"
+NEXT_PUBLIC_BACKEND_URL="http://localhost:3001"
+BACKEND_INTERNAL_URL="http://localhost:3001"
+
+IS_GENERAL="true"
+
+# Plain HTTP locally, so the auth cookie cannot be 'secure'.
+# NEVER set this in production — see env/README.md.
+NOT_SECURED=true
+
+# === Storage — local disk, no Cloudflare needed for dev
+STORAGE_PROVIDER="local"
+UPLOAD_DIRECTORY="./uploads"
+NEXT_PUBLIC_UPLOAD_STATIC_DIRECTORY="/uploads"
+
+DISABLE_REGISTRATION=false
+API_LIMIT=30
+
+# === Branding
+# Point at the local Astro site (cd ../marketing-site && npm run dev) so the
+# links on the signup form are clickable in development. Production uses the
+# real the brand.com URLs, and there they are BUILD ARGS — see env/README.md.
+# Name and motto shown in the app. Kept out of source so the fork carries
+# no brand literals. NEXT_PUBLIC_* are BUILD ARGS — see env/README.md.
+NEXT_PUBLIC_BRAND_NAME="Your Brand"
+NEXT_PUBLIC_BRAND_MOTTO="Your tagline here"
+NEXT_PUBLIC_SITE_URL="http://localhost:4321"
+NEXT_PUBLIC_TERMS_URL="http://localhost:4321/terms"
+NEXT_PUBLIC_PRIVACY_URL="http://localhost:4321/privacy-policy"
+NEXT_PUBLIC_PLAUSIBLE_DOMAIN="localhost"
+NEXT_PUBLIC_ANALYTICS_DOMAIN="localhost"
+
+# === Social platforms
+# Leave blank unless you are testing a specific provider. Facebook's redirect
+# URI must match FRONTEND_URL exactly, so to test it locally you would add
+# http://localhost:4200/integrations/social/facebook to the Meta app —
+# easier to test social connections against production.
+FACEBOOK_APP_ID=""
+FACEBOOK_APP_SECRET=""
