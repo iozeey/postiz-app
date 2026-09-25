@@ -1,0 +1,97 @@
+// Brand overrides.
+//
+// Loaded AFTER colors.scss in global.scss, so at equal specificity these win.
+// NEVER edit colors.scss directly — confining changes to this file is what
+// keeps rebases onto upstream release tags cheap. A new file cannot conflict.
+//
+// Upstream carries 14 purple/magenta tokens across three near-identical
+// purples (#612bd3, #612ad5, #832ad5) plus a magenta accent. They are all
+// derived here from two seeds, so changing the brand means editing two lines.
+//
+// TODO: $brand and $brand-accent are placeholders matched to the marketing
+// site. The logo is a full-spectrum rainbow and yields no single
+// accent colour, so this is a decision to make, not one to read off the mark.
+
+@use 'sass:color';
+
+$brand: #b4552d;
+$brand-accent: #c06b3c;
+
+$brand-strong:  color.adjust($brand, $lightness: -6%);
+$brand-light:   color.adjust($brand, $lightness: 9%);
+$brand-lighter: color.adjust($brand, $lightness: 16%);
+$brand-pale:    color.adjust($brand, $lightness: 30%);
+$brand-paler:   color.adjust($brand, $lightness: 38%);
+$brand-deep:    color.adjust($brand, $lightness: -26%);
+$brand-deepest: color.adjust($brand, $lightness: -31%);
+$accent-light:  color.adjust($brand-accent, $lightness: 20%);
+
+@mixin brand-tokens {
+  // Primary actions
+  --new-btn-primary: #{$brand};
+  --color-forth: #{$brand};
+  --color-seventh: #{$brand-light};
+
+  // Secondary / decorative purples
+  --color-custom4: #{$brand-light};
+  --color-custom7: #{$brand-lighter};
+  --color-custom30: #{$brand-strong};
+  --color-custom45: #{$brand};
+  --color-custom28: #{$brand-pale};
+  --color-custom41: #{$brand-paler};
+
+  // Deep shades used behind overlays and focused items
+  --new-back-drop: #{$brand-deepest};
+  --new-textItemFocused: #{$brand-deep};
+  --color-custom29: #{$brand-deepest};
+
+  // AI / highlight accent — kept distinct from the primary on purpose,
+  // as upstream uses it to mark AI-generated actions.
+  --new-ai-btn: #{$brand-accent};
+  --new-table-text-focused: #{$accent-light};
+}
+
+:root {
+  .dark { @include brand-tokens; }
+  .light { @include brand-tokens; }
+}
+
+// Wordmark. Lives here rather than inline because a @keyframes cannot be
+// expressed as a style attribute.
+.brand-wordmark {
+  // The channels this product publishes to, carried in the wordmark itself.
+  // Ordered cyan -> blue -> purple -> red -> amber so adjacent stops are
+  // neighbours on the wheel; cyan straight into red blends to grey midway.
+  color: currentColor;
+  background-image: linear-gradient(
+    104deg,
+    #25f4ee 0%,   // TikTok
+    #1877f2 22%,  // Facebook
+    #833ab4 46%,  // Instagram
+    #ff0000 74%,  // YouTube
+    #fcb045 100%  // Instagram amber
+  );
+  background-size: 260% auto;
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  padding-right: 0.07em;
+  animation: brand-sweep 11s ease-in-out infinite;
+}
+
+// Without background-clip support the text would render fully invisible.
+@supports not (background-clip: text) {
+  .brand-wordmark {
+    -webkit-text-fill-color: currentColor;
+    animation: none;
+  }
+}
+
+@keyframes brand-sweep {
+  0%, 100% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .brand-wordmark { animation: none; background-position: 0% 50%; }
+}
