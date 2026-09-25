@@ -5,6 +5,9 @@ dist
 tmp
 /out-tsc
 .env
+# Every env file is ignored; only .env.example is committed.
+.env.*
+!.env.example
 .apple
 # dependencies
 node_modules
