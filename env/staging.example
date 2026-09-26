@@ -7,6 +7,10 @@
 # no brand literals. NEXT_PUBLIC_* are BUILD ARGS — see env/README.md.
 NEXT_PUBLIC_BRAND_NAME="Your Brand"
 NEXT_PUBLIC_BRAND_MOTTO="Your tagline here"
+# Optional. A YouTube video id shows a tutorial as the last onboarding step;
+# leaving it empty shows a thank-you screen instead. Never point this at a
+# video branded by someone else.
+NEXT_PUBLIC_BRAND_TUTORIAL_VIDEO=""
 NEXT_PUBLIC_SITE_URL="https://stage.example.com"
 NEXT_PUBLIC_TERMS_URL=https://stage.example.com/terms \
 #     --build-arg NEXT_PUBLIC_PRIVACY_URL=https://stage.example.com/privacy-policy \
