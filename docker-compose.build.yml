@@ -25,6 +25,35 @@ services:
         NEXT_PUBLIC_PRIVACY_URL: ${NEXT_PUBLIC_PRIVACY_URL}
     restart: always
 
+    # Wait for Temporal to answer the same call the apps make before starting
+    # PM2. Both backend and orchestrator open their Temporal connection once
+    # during NestJS init with no retry and no timeout: against a Temporal that
+    # is not ready they hang in bootstrap forever — no crash, no error, PM2
+    # still "online", nothing bound to port 3000 or 3002. Compose depends_on
+    # was not enough, because the healthcheck passes before auto-setup has
+    # finished registering the default namespace.
+    #
+    # describeNamespace is exactly what the SDK needs, so if this succeeds the
+    # apps will connect. Gives up after 5 minutes and starts anyway rather than
+    # blocking the deploy forever.
+    command:
+      - sh
+      - -c
+      - |
+        cd /app
+        for i in $$(seq 1 60); do
+          node -e "
+            const { Connection } = require('@temporalio/client');
+            Connection.connect({ address: process.env.TEMPORAL_ADDRESS || 'temporal:7233' })
+              .then((c) => c.workflowService.describeNamespace({ namespace: process.env.TEMPORAL_NAMESPACE || 'default' }))
+              .then(() => process.exit(0))
+              .catch(() => process.exit(1));
+          " 2>/dev/null && echo "temporal ready" && break
+          echo "waiting for temporal ($$i/60)"
+          sleep 5
+        done
+        nginx && pnpm run pm2
+
     environment:
       MAIN_URL: "https://${POSTIZ_HOST}"
       FRONTEND_URL: "https://${POSTIZ_HOST}"
@@ -67,13 +96,11 @@ services:
       postiz-redis:
         condition: service_healthy
       temporal:
-        # Must be service_healthy, not service_started. The orchestrator opens
-        # its Temporal connection once at boot and has no retry: if it starts
-        # against a Temporal that is not accepting connections yet, it hangs in
-        # NestJS module init forever — no error, no crash, PM2 still reports
-        # "online", and every post silently sits in QUEUE because
-        # startWorkflow() swallows the failure (posts.service.ts:768).
-        condition: service_healthy
+        # service_started is enough here: the container's own command waits for
+        # Temporal to answer describeNamespace before starting PM2. Gating on
+        # service_healthy as well risks a flaky probe blocking startup entirely,
+        # and the in-container wait cannot deadlock because it times out.
+        condition: service_started
 
   postiz-postgres:
     image: postgres:17-alpine
