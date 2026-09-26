@@ -34,7 +34,13 @@ services:
       IS_GENERAL: "true"
       DISABLE_REGISTRATION: "false"
       RUN_CRON: "true"
-      NOT_SECURED: "true"
+      # NOT_SECURED is deliberately unset. With it on, the auth cookie loses
+      # secure/httpOnly/sameSite, AND the logout button takes a client-side
+      # path that writes document.cookie without a domain attribute — which
+      # cannot clear a cookie set with Domain=.<apex>, so logout silently
+      # fails. Unset, logout routes through the backend, which clears it
+      # with the matching domain. Note the code tests bare truthiness, so
+      # NOT_SECURED: "false" would still ENABLE it. It must stay absent.
       STORAGE_PROVIDER: "local"
       UPLOAD_DIRECTORY: "/uploads"
       NEXT_PUBLIC_UPLOAD_DIRECTORY: "/uploads"
