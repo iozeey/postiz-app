@@ -1,5 +1,11 @@
 'use client';
 
+import {
+  BRAND,
+  BRAND_MOTTO,
+  BRAND_TUTORIAL_VIDEO,
+} from '@gitroom/frontend/brand';
+
 import React, { FC, Fragment, useCallback, useMemo, useState } from 'react';
 import { useFetch } from '@gitroom/helpers/utils/custom.fetch';
 import useSWR from 'swr';
@@ -37,7 +43,9 @@ export const OnboardingModal: FC<OnboardingModalProps> = ({ onClose }) => {
     () => [
       t('connect_channels', 'Connect Channels'),
       t('connect_agents', 'Connect Agents'),
-      t('watch_tutorial', 'Watch Tutorial'),
+      BRAND_TUTORIAL_VIDEO
+        ? t('watch_tutorial', 'Watch Tutorial')
+        : t('onboarding_all_set', 'All Set'),
     ],
     [t]
   );
@@ -690,28 +698,74 @@ const OnboardingStep3: FC<{ onBack: () => void; onFinish: () => void }> = ({
     <div className="flex flex-col gap-[24px] flex-1">
       <div className="flex gap-[4px] flex-col text-center">
         <div className="text-[24px] font-semibold">
-          {t('watch_tutorial_title', 'Learn How to Use Postiz')}
+          {BRAND_TUTORIAL_VIDEO
+            ? t('watch_tutorial_title', `Learn How to Use ${BRAND}`)
+            : t('onboarding_thanks_title', `Welcome to ${BRAND}`)}
         </div>
         <div className="text-[14px] text-customColor18">
-          {t(
-            'watch_tutorial_description',
-            'Watch this short video to learn how to get the most out of Postiz'
-          )}
+          {BRAND_TUTORIAL_VIDEO
+            ? t(
+                'watch_tutorial_description',
+                `Watch this short video to learn how to get the most out of ${BRAND}`
+              )
+            : t(
+                'onboarding_thanks_description',
+                'Your account is ready. Thank you for joining us.'
+              )}
         </div>
       </div>
 
-      {/* YouTube Video Embed */}
-      <div className="relative flex-1 rounded-[12px] overflow-hidden">
-        <div className="absolute left-0 top-0 w-full h-full flex justify-center">
-          <iframe
-            className="h-full aspect-video"
-            src="https://www.youtube.com/embed/BdsCVvEYgHU?si=vvhaZJ8I5oXXvVJS?autoplay=1"
-            title="Postiz Tutorial"
-            allow="autoplay"
-            allowFullScreen
-          />
+      {BRAND_TUTORIAL_VIDEO ? (
+        /* Tutorial video, only when one has been configured for this brand */
+        <div className="relative flex-1 rounded-[12px] overflow-hidden">
+          <div className="absolute left-0 top-0 w-full h-full flex justify-center">
+            <iframe
+              className="h-full aspect-video"
+              src={`https://www.youtube.com/embed/${BRAND_TUTORIAL_VIDEO}?autoplay=1`}
+              title={`${BRAND} Tutorial`}
+              allow="autoplay"
+              allowFullScreen
+            />
+          </div>
         </div>
-      </div>
+      ) : (
+        <div className="flex-1 flex flex-col items-center justify-center gap-[24px] rounded-[12px] border border-tableBorder bg-newBgColorInner p-[32px] text-center">
+          <div className="w-[72px] h-[72px] rounded-full flex items-center justify-center bg-gradient-to-r from-[#622aff] to-[#8b5cf6] shadow-lg shadow-purple-500/25">
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              width="34"
+              height="34"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2.5"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              className="text-white"
+            >
+              <path d="M20 6 9 17l-5-5" />
+            </svg>
+          </div>
+
+          <div className="flex flex-col gap-[8px] max-w-[460px]">
+            <div className="text-[20px] font-semibold">
+              {t('onboarding_thanks_heading', 'You are all set')}
+            </div>
+            <div className="text-[14px] text-customColor18 leading-[1.7]">
+              {t(
+                'onboarding_thanks_body',
+                'Pick a slot on the calendar to write your first post, and we will publish it to every channel you connected.'
+              )}
+            </div>
+          </div>
+
+          {!!BRAND_MOTTO && (
+            <div className="text-[13px] text-customColor18 italic">
+              {BRAND_MOTTO}
+            </div>
+          )}
+        </div>
+      )}
 
       {/* Action buttons */}
       <div className="flex justify-between pt-[24px] mt-[8px]">
