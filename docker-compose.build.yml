@@ -159,7 +159,10 @@ services:
       # auto-setup binds the container's own IP, never loopback, so a
       # 127.0.0.1 probe fails even when Temporal is serving perfectly.
       # This reported "unhealthy" for days while the server was fine.
-      test: ["CMD", "tctl", "--address", "temporal:7233", "workflow", "list"]
+      # $$ escapes Compose interpolation. hostname -i is the address
+      # auto-setup actually bound, so this cannot fail on DNS — which
+      # matters now that postiz-app will not start until this passes.
+      test: ["CMD-SHELL", "tctl --address $$(hostname -i):7233 workflow list"]
       interval: 15s
       timeout: 10s
       retries: 30
