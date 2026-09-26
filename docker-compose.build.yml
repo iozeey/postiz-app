@@ -1,5 +1,3 @@
-version: "3.8"
-
 services:
   postiz-app:
     # Built from this repository instead of pulling upstream's prebuilt image,
@@ -13,7 +11,9 @@ services:
     build:
       context: .
       dockerfile: Dockerfile.dev
-      target: dist
+      # No `target:` — Dockerfile.dev is single-stage. var/docker/docker-build.sh
+      # still references `--target dist`, but that stage does not exist in the
+      # current Dockerfile and specifying it fails the build.
       args:
         NEXT_PUBLIC_BRAND_NAME: ${NEXT_PUBLIC_BRAND_NAME}
         NEXT_PUBLIC_BRAND_MOTTO: ${NEXT_PUBLIC_BRAND_MOTTO}
