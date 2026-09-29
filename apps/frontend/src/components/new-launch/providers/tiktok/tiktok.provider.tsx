@@ -61,7 +61,7 @@ const TikTokSettings: FC<{
     }
     return t(
       'tiktok_restriction_upload_video',
-      'TikTok restriction: For upload-only video, TikTok does not accept a title or message. The content will default to "#Postiz" and you can edit it inside the TikTok app before publishing.'
+      'TikTok restriction: For upload-only video, only your post text is sent, as the title. Every other setting is chosen inside the TikTok app, where you finish and publish the draft.'
     );
   }, [hasMedia, isUploadMode, isVideo, t]);
 
@@ -169,7 +169,7 @@ const TikTokSettings: FC<{
           </option>
         ))}
       </Select>
-      {isUploadMode && <div className="-mt-[23px] mb-[23px] text-red-600">After posting you fill find a notification inside your Inbox about your post (not content studio)</div>}
+      {isUploadMode && <div className="-mt-[23px] mb-[23px] text-red-600">After posting, you will find a notification about this post in your TikTok inbox, not in TikTok Studio.</div>}
       <div className={clsx('flex flex-col', directPostOnly)}>
         <Select
           label={
