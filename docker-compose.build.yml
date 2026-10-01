@@ -133,6 +133,13 @@ services:
 
   temporal-elasticsearch:
     image: elasticsearch:7.17.27
+    # restart: always is load-bearing. Without it, a Docker or host restart
+    # brings back only the services that have a policy — postiz-app, postgres
+    # and redis — and leaves the Temporal stack exited. The backend then cannot
+    # resolve `temporal` at boot, dies in TemporalRegister.onModuleInit, and the
+    # whole site 502s until someone notices. That is what took it down on
+    # 30 Sep and 1 Oct 2026.
+    restart: always
     healthcheck:
       test: ["CMD-SHELL", "curl -sf localhost:9200/_cluster/health || exit 1"]
       interval: 10s
@@ -152,6 +159,13 @@ services:
 
   temporal-postgresql:
     image: postgres:16
+    # restart: always is load-bearing. Without it, a Docker or host restart
+    # brings back only the services that have a policy — postiz-app, postgres
+    # and redis — and leaves the Temporal stack exited. The backend then cannot
+    # resolve `temporal` at boot, dies in TemporalRegister.onModuleInit, and the
+    # whole site 502s until someone notices. That is what took it down on
+    # 30 Sep and 1 Oct 2026.
+    restart: always
     environment:
       POSTGRES_PASSWORD: ${TEMPORAL_PASSWORD}
       POSTGRES_USER: ${TEMPORAL_USER}
@@ -165,6 +179,13 @@ services:
 
   temporal:
     image: temporalio/auto-setup:1.28.1
+    # restart: always is load-bearing. Without it, a Docker or host restart
+    # brings back only the services that have a policy — postiz-app, postgres
+    # and redis — and leaves the Temporal stack exited. The backend then cannot
+    # resolve `temporal` at boot, dies in TemporalRegister.onModuleInit, and the
+    # whole site 502s until someone notices. That is what took it down on
+    # 30 Sep and 1 Oct 2026.
+    restart: always
     depends_on:
       temporal-postgresql:
         condition: service_healthy
