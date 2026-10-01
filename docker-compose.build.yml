@@ -52,7 +52,62 @@ services:
           echo "waiting for temporal ($$i/60)"
           sleep 5
         done
+        # Watchdog. The backend and orchestrator can block forever inside NestJS
+        # module init when Temporal is reachable but not ready: the process stays
+        # alive, consumes no CPU, never binds its port, and PM2 keeps reporting
+        # "online". Observed 30 Sep and 1 Oct 2026 — two days of 502s with an
+        # empty error log. Nothing in Docker or PM2 detects this, so we do.
+        #
+        # Grace period first, because a cold boot legitimately takes minutes
+        # (prisma push, Next build cache, the orchestrator's workflow bundle).
+        (
+          sleep 420
+          backend_fails=0
+          orch_fails=0
+          while true; do
+            if node -e "require('net').connect(3000,'127.0.0.1').on('connect',function(){process.exit(0)}).on('error',function(){process.exit(1)})" 2>/dev/null; then
+              backend_fails=0
+            else
+              backend_fails=$$((backend_fails+1))
+              echo "[watchdog] backend port 3000 closed ($$backend_fails/3)"
+              if [ "$$backend_fails" -ge 3 ]; then
+                echo "[watchdog] restarting backend"
+                pm2 restart backend
+                backend_fails=0
+                sleep 180
+              fi
+            fi
+            if node -e "require('net').connect(3002,'127.0.0.1').on('connect',function(){process.exit(0)}).on('error',function(){process.exit(1)})" 2>/dev/null; then
+              orch_fails=0
+            else
+              orch_fails=$$((orch_fails+1))
+              echo "[watchdog] orchestrator port 3002 closed ($$orch_fails/3)"
+              if [ "$$orch_fails" -ge 3 ]; then
+                echo "[watchdog] restarting orchestrator"
+                pm2 restart orchestrator
+                orch_fails=0
+                sleep 180
+              fi
+            fi
+            sleep 30
+          done
+        ) &
+
         nginx && pnpm run pm2
+
+    # The only container that serves users was the only one without a
+    # healthcheck, which is why Dokploy showed it "running" through a complete
+    # two-day outage. This makes a hung backend visible in the Containers tab.
+    healthcheck:
+      test:
+        - CMD
+        - node
+        - -e
+        - require('net').connect(3000,'127.0.0.1').on('connect',function(){process.exit(0)}).on('error',function(){process.exit(1)})
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 420s
 
     environment:
       MAIN_URL: "https://${POSTIZ_HOST}"
