@@ -141,6 +141,29 @@ services:
       LINKEDIN_CLIENT_SECRET: ${LINKEDIN_CLIENT_SECRET}
       X_API_KEY: ${X_API_KEY}
       X_API_SECRET: ${X_API_SECRET}
+      TIKTOK_CLIENT_ID: ${TIKTOK_CLIENT_ID}
+      TIKTOK_CLIENT_SECRET: ${TIKTOK_CLIENT_SECRET}
+
+      # === Email (Brevo over SMTP) ===
+      # Every value comes from the Dokploy Environment tab. EMAIL_PROVIDER must
+      # be exactly "nodemailer": EmailService switches on this string, and
+      # anything else — including an unset value — selects EmptyProvider, which
+      # accepts every send and drops it without an error.
+      #
+      # EMAIL_SECURE is compared against the literal string 'true'. Port 587 is
+      # STARTTLS, so it stays "false"; set it true only alongside port 465.
+      #
+      # EMAIL_FROM_ADDRESS and EMAIL_FROM_NAME are absent from
+      # NodeMailerProvider.validateEnvKeys, so a missing value is never
+      # reported — sendEmailSync just returns before sending. Keep both set.
+      EMAIL_PROVIDER: ${EMAIL_PROVIDER}
+      EMAIL_HOST: ${EMAIL_HOST}
+      EMAIL_PORT: ${EMAIL_PORT}
+      EMAIL_SECURE: ${EMAIL_SECURE}
+      EMAIL_USER: ${EMAIL_USER}
+      EMAIL_PASS: ${EMAIL_PASS}
+      EMAIL_FROM_ADDRESS: ${EMAIL_FROM_ADDRESS}
+      EMAIL_FROM_NAME: ${EMAIL_FROM_NAME}
 
     volumes:
       - postiz-config:/config/
