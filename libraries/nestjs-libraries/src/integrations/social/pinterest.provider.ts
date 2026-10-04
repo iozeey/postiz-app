@@ -115,6 +115,16 @@ export class PinterestProvider
         value: string;
       }
     | undefined {
+    // code 29: the app itself is on Trial access, which may only create Pins
+    // in the sandbox. Nothing the user changes will fix it, so say so instead
+    // of surfacing "Unknown Error".
+    if (body.indexOf('Apps with Trial access may not create Pins') > -1) {
+      return {
+        type: 'bad-body' as const,
+        value:
+          'Pinterest: this app is on Trial access, which cannot create Pins yet (Pinterest code 29). Pins will publish once Pinterest grants Standard access.',
+      };
+    }
     if (body.indexOf('constraint: maxItems=5') > -1) {
       return {
         type: 'bad-body' as const,
