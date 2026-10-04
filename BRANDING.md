@@ -150,6 +150,25 @@ Still outstanding: `components/webhooks/webhooks.tsx` uses two sample avatars
 hosted on `uploads.gitroom.com`. Cosmetic, inside a webhook example, but it is
 an external dependency on Postiz's CDN.
 
+### 8. Emails — the same variable, read server-side
+
+`libraries/nestjs-libraries/src/brand.ts` is the backend twin of
+`apps/frontend/src/brand.ts` and reads the same `NEXT_PUBLIC_BRAND_NAME`
+(the image sets it as a runtime `ENV`, not only a build arg). Email subjects
+and bodies that named the product use it: the digest subject
+(`[Brand] Your latest notifications`), the admin login-switch notice and the
+Listmonk welcome subject. The sender name and footer already come from
+`EMAIL_FROM_NAME`.
+
+The digest is a Temporal workflow, and workflow code runs in a sandbox with no
+`process.env`. Each digest also lives forever through `continueAsNew`, so a
+start argument would never reach the ones already running. The name therefore
+rides on every `email` signal instead; anything queued before the change sends
+a plain `Your latest notifications`.
+
+Not touched: `agencies.service.ts`, upstream's agency directory, which links to
+`postiz.com` and mails `nevo@postiz.com` when an agency is created.
+
 ## Rules that keep rebases cheap
 
 1. **New files over edited files.** A new file can never conflict.

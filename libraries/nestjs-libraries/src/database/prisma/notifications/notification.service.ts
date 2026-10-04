@@ -5,6 +5,7 @@ import { OrganizationRepository } from '@gitroom/nestjs-libraries/database/prism
 import { TemporalService } from 'nestjs-temporal-core';
 import { TypedSearchAttributes } from '@temporalio/common';
 import { organizationId } from '@gitroom/nestjs-libraries/temporal/temporal.search.attribute';
+import { BRAND } from '@gitroom/nestjs-libraries/brand';
 
 export type NotificationType = 'success' | 'fail' | 'info';
 
@@ -64,6 +65,7 @@ export class NotificationService {
                   title: subject,
                   message,
                   type,
+                  brand: BRAND,
                 },
               ],
             ],
