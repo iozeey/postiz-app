@@ -10,6 +10,7 @@ import dayjs from 'dayjs';
 import { makeId } from '@gitroom/nestjs-libraries/services/make.is';
 import { Organization, ShortLinkPreference, User } from '@prisma/client';
 import { AutopostService } from '@gitroom/nestjs-libraries/database/prisma/autopost/autopost.service';
+import { BRAND } from '@gitroom/nestjs-libraries/brand';
 
 @Injectable()
 export class OrganizationService {
@@ -132,7 +133,7 @@ export class OrganizationService {
       body.email
     );
     if (!users.length) {
-      throw new HttpException('No Postiz account found for this email', 400);
+      throw new HttpException(`No ${BRAND} account found for this email`, 400);
     }
 
     if (users.length > 1) {

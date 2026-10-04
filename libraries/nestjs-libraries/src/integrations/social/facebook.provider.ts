@@ -22,6 +22,7 @@ import { Integration } from '@prisma/client';
 import { hasExtension } from '@gitroom/helpers/utils/has.extension';
 import { timer } from '@gitroom/helpers/utils/timer';
 import { Rules } from '@gitroom/nestjs-libraries/chat/rules.description.decorator';
+import { BRAND } from '@gitroom/nestjs-libraries/brand';
 
 export const META_GRAPH_API_VERSION = 'v25.0';
 
@@ -93,7 +94,7 @@ export class FacebookProvider extends SocialAbstract implements SocialProvider {
       return {
         type: 'refresh-token' as const,
         value:
-          'Postiz is not authorized to publish as this page, please reconnect the channel',
+          `${BRAND} is not authorized to publish as this page, please reconnect the channel`,
       };
     }
 
