@@ -166,8 +166,10 @@ start argument would never reach the ones already running. The name therefore
 rides on every `email` signal instead; anything queued before the change sends
 a plain `Your latest notifications`.
 
-Not touched: `agencies.service.ts`, upstream's agency directory, which links to
-`postiz.com` and mails `nevo@postiz.com` when an agency is created.
+`agencies.service.ts` sends no email at all. Upstream mailed every new agency
+to `nevo@postiz.com` with approve/decline links on `postiz.com`, and told the
+owner they were listed there. Nothing calls those methods in this version, but
+they were removed so a future upstream route cannot switch the leak back on.
 
 ## Rules that keep rebases cheap
 
