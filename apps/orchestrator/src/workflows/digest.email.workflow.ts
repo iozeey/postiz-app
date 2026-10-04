@@ -53,11 +53,15 @@ export async function digestEmailWorkflow({
 
       if (toSend.length === 0) continue;
 
+      const brand = toSend.find((email) => email.brand)?.brand;
+
       await sendEmailAsync(
         user.user.email,
         toSend.length === 1
           ? toSend[0].title
-          : `[Postiz] Your latest notifications`,
+          : brand
+          ? `[${brand}] Your latest notifications`
+          : 'Your latest notifications',
         toSend.map((p) => p.message).join('<br/>'),
         'bottom'
       );

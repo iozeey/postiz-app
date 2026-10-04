@@ -7,6 +7,7 @@ import { TimezoneDto } from '@gitroom/nestjs-libraries/dtos/users/timezone.dto';
 import { OrganizationRepository } from '@gitroom/nestjs-libraries/database/prisma/organizations/organization.repository';
 import { IntegrationRepository } from '@gitroom/nestjs-libraries/database/prisma/integrations/integration.repository';
 import { NotificationService } from '@gitroom/nestjs-libraries/database/prisma/notifications/notification.service';
+import { BRAND } from '@gitroom/nestjs-libraries/brand';
 
 @Injectable()
 export class UsersService {
@@ -68,8 +69,8 @@ export class UsersService {
           this._notificationService
             .sendEmail(
               account.email,
-              'Your Postiz login was changed',
-              `An administrator changed the login for your Postiz account. ` +
+              `Your ${BRAND} login was changed`,
+              `An administrator changed the login for your ${BRAND} account. ` +
                 `You can now sign in using ${account.email}. ` +
                 `Your subscription and plan were not changed by this switch — ` +
                 `if you intended to cancel a subscription, please do that ` +
