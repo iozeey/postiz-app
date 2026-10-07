@@ -13,7 +13,14 @@ import TelegramBot from 'node-telegram-bot-api';
 import { Integration } from '@prisma/client';
 import striptags from 'striptags';
 
-const telegramBot = new TelegramBot(process.env.TELEGRAM_TOKEN!);
+// TELEGRAM_API_URL lets a host that cannot reach api.telegram.org directly
+// (some networks block it) go through a relay that forwards to it. Unset, the
+// library talks to api.telegram.org as before.
+const telegramBot = new TelegramBot(process.env.TELEGRAM_TOKEN!, {
+  ...(process.env.TELEGRAM_API_URL
+    ? { baseApiUrl: process.env.TELEGRAM_API_URL.replace(/\/+$/, '') }
+    : {}),
+});
 // Added to support local storage posting
 const frontendURL = process.env.FRONTEND_URL || 'http://localhost:5000';
 const mediaStorage = process.env.STORAGE_PROVIDER || 'local';
