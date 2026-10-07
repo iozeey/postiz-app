@@ -278,12 +278,16 @@ export class BlueskyProvider extends SocialAbstract implements SocialProvider {
         label: 'Identifier',
         validation: `/^.+$/`,
         type: 'text' as const,
+        // Every post logs in again with this value, so a handle stops working
+        // if the account later changes handle; the email does not.
+        hint: 'Your Bluesky handle (e.g. name.bsky.social) or account email. The email keeps working if you change your handle later.',
       },
       {
         key: 'password',
-        label: 'Password',
+        label: 'App password',
         validation: `/^.{3,}$/`,
         type: 'password' as const,
+        hint: 'Create one in Bluesky: Settings → Privacy and security → App passwords. Do not use your main Bluesky password.',
       },
     ];
   }
