@@ -823,8 +823,13 @@ export class PostsService {
           const instance = plainToInstance(provider.dto, settings, {
             enableImplicitConversion: false,
           });
+          // forbidUnknownValues is off because some providers have a settings
+          // DTO with no fields (KickDto): class-validator 0.14 rejects an
+          // object with no validation metadata as "an unknown value was passed
+          // to the validate function", which blocked every Kick post.
           const validationErrors = await validate(instance as object, {
             skipMissingProperties: false,
+            forbidUnknownValues: false,
           });
           settingsError = this.firstValidationError(validationErrors);
           valid = validationErrors.length === 0;
