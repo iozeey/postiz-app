@@ -39,6 +39,13 @@ const copilotCors = () => ({
   credentials: !process.env.NOT_SECURED,
 });
 
+// With @Res() injected, Nest leaves the response to the handler, so a bare
+// `return` left the request open until the proxy timed out (~60s, then 503).
+// CopilotKit wraps the whole app and waits for this runtime call before
+// rendering, so every page load stalled. Answer at once instead.
+const aiNotConfigured = (res: Response) =>
+  res.status(503).json({ error: 'AI assistant is not configured' });
+
 @Controller('/copilot')
 export class CopilotController {
   constructor(
@@ -52,7 +59,7 @@ export class CopilotController {
       process.env.OPENAI_API_KEY === ''
     ) {
       Logger.warn('OpenAI API key not set, chat functionality will not work');
-      return;
+      return aiNotConfigured(res);
     }
 
     const copilotRuntimeHandler = copilotRuntimeNodeHttpEndpoint({
@@ -79,7 +86,7 @@ export class CopilotController {
       process.env.OPENAI_API_KEY === ''
     ) {
       Logger.warn('OpenAI API key not set, chat functionality will not work');
-      return;
+      return aiNotConfigured(res);
     }
     const mastra = await this._mastraService.mastra();
     const requestContext = new RequestContext<ChannelsContext>();
