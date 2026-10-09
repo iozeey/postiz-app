@@ -137,6 +137,19 @@ services:
       # For more configuration options and details, please refer to the official documentation.
       FACEBOOK_APP_ID: ${FACEBOOK_APP_ID}
       FACEBOOK_APP_SECRET: ${FACEBOOK_APP_SECRET}
+      # Instagram has two channels. "instagram" (via a Facebook Page) signs in
+      # through the Facebook app above. "instagram-standalone" signs in with
+      # Instagram Login, which uses the separate Instagram app ID and secret
+      # shown under Instagram > API setup with Instagram login — not the
+      # Facebook ones. Unset, the connect button sends client_id=undefined.
+      #
+      # Listing a key here is documentation, not a requirement: Dokploy writes
+      # the Environment tab to .env in the build context, COPY . /app bakes it
+      # into the image, and backend/orchestrator start with `dotenv -e .env`.
+      # So every Environment-tab value reaches the app, listed or not — and a
+      # changed value needs a Redeploy (rebuild), not just a restart.
+      INSTAGRAM_APP_ID: ${INSTAGRAM_APP_ID}
+      INSTAGRAM_APP_SECRET: ${INSTAGRAM_APP_SECRET}
       LINKEDIN_CLIENT_ID: ${LINKEDIN_CLIENT_ID}
       LINKEDIN_CLIENT_SECRET: ${LINKEDIN_CLIENT_SECRET}
       X_API_KEY: ${X_API_KEY}
