@@ -37,6 +37,7 @@ import { LanguageComponent } from '@gitroom/frontend/components/layout/language.
 import { ChromeExtensionComponent } from '@gitroom/frontend/components/layout/chrome.extension.component';
 import NotificationComponent from '@gitroom/frontend/components/notifications/notification.component';
 import { OrganizationSelector } from '@gitroom/frontend/components/layout/organization.selector';
+import { AccountMenu } from '@gitroom/frontend/components/layout/account.menu';
 import { InvoicesComponent } from '@gitroom/frontend/components/layout/invoices.component';
 import { StreakComponent } from '@gitroom/frontend/components/layout/streak.component';
 import { PreConditionComponent } from '@gitroom/frontend/components/layout/pre-condition.component';
@@ -185,6 +186,7 @@ export const LayoutComponent = ({ children }: { children: ReactNode }) => {
                             <AttachToFeedbackIcon />
                           </div>
                           <NotificationComponent />
+                          <AccountMenu />
                         </div>
                       </div>
                       <div className="flex flex-1 min-w-0 gap-[1px] mobile:flex-col">
