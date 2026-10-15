@@ -37,6 +37,7 @@ import { LanguageComponent } from '@gitroom/frontend/components/layout/language.
 import { ChromeExtensionComponent } from '@gitroom/frontend/components/layout/chrome.extension.component';
 import NotificationComponent from '@gitroom/frontend/components/notifications/notification.component';
 import { OrganizationSelector } from '@gitroom/frontend/components/layout/organization.selector';
+import { AccountMenu } from '@gitroom/frontend/components/layout/account.menu';
 import { StreakComponent } from '@gitroom/frontend/components/layout/streak.component';
 import { PreConditionComponent } from '@gitroom/frontend/components/layout/pre-condition.component';
 import { AttachToFeedbackIcon } from '@gitroom/frontend/components/new-layout/sentry.feedback.component';
@@ -142,6 +143,7 @@ export const LayoutComponent = ({ children }: { children: ReactNode }) => {
                           <div className="w-[1px] h-[20px] bg-blockSeparator" />
                           <AttachToFeedbackIcon />
                           <NotificationComponent />
+                          <AccountMenu />
                         </div>
                       </div>
                       <div className="flex flex-1 gap-[1px]">{children}</div>
