@@ -7,6 +7,7 @@ import { Button } from '@gitroom/react/form/button';
 import { useToaster } from '@gitroom/react/toaster/toaster';
 import { deleteDialog } from '@gitroom/react/helpers/delete.dialog';
 import { useT } from '@gitroom/react/translation/get.transation.service.client';
+import { BRAND } from '@gitroom/frontend/brand';
 
 const useApprovedApps = () => {
   const fetch = useFetch();
@@ -47,7 +48,10 @@ export const ApprovedAppsComponent: FC = () => {
           );
           mutate();
         } catch {
-          toaster.show(t('failed_to_revoke', 'Failed to revoke access'), 'warning');
+          toaster.show(
+            t('failed_to_revoke', 'Failed to revoke access'),
+            'warning'
+          );
         }
       }
     },
@@ -61,13 +65,12 @@ export const ApprovedAppsComponent: FC = () => {
   return (
     <div className="flex flex-col gap-[20px]">
       <div className="flex flex-col">
-        <h3 className="text-[20px]">
-          {t('approved_apps', 'Approved Apps')}
-        </h3>
+        <h3 className="text-[20px]">{t('approved_apps', 'Approved Apps')}</h3>
         <div className="text-customColor18 mt-[4px]">
           {t(
             'apps_you_have_authorized',
-            'Applications you have authorized to access your Postiz account.'
+            'Applications you have authorized to access your {{brand}} account.',
+            { brand: BRAND }
           )}
         </div>
       </div>

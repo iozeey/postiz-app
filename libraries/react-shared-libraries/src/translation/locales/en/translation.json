@@ -779,5 +779,6 @@
   "tiktok_posting_to_account": "Posting to TikTok account:",
   "tiktok_video_too_long": "This video is too long for this TikTok account.",
   "tiktok_interactions_turned_off": "Greyed-out options are turned off in this account's TikTok settings.",
-  "tiktok_processing_notice": "After you publish, it may take a few minutes for your content to process and appear on your TikTok profile."
+  "tiktok_processing_notice": "After you publish, it may take a few minutes for your content to process and appear on your TikTok profile.",
+  "apps_you_have_authorized": "Applications you have authorized to access your {{brand}} account."
 }
