@@ -775,5 +775,9 @@
   "tiktok_video_labeled_paid_partnership": "Your video will be labeled as \"Paid partnership\".",
   "tiktok_photo_labeled_promotional": "Your photo will be labeled as \"Promotional content\".",
   "tiktok_video_labeled_promotional": "Your video will be labeled as \"Promotional content\".",
-  "tiktok_disclose_choose_option": "You need to indicate if your content promotes yourself, a third party, or both."
+  "tiktok_disclose_choose_option": "You need to indicate if your content promotes yourself, a third party, or both.",
+  "tiktok_posting_to_account": "Posting to TikTok account:",
+  "tiktok_video_too_long": "This video is too long for this TikTok account.",
+  "tiktok_interactions_turned_off": "Greyed-out options are turned off in this account's TikTok settings.",
+  "tiktok_processing_notice": "After you publish, it may take a few minutes for your content to process and appear on your TikTok profile."
 }

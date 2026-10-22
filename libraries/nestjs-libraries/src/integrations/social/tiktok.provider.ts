@@ -239,8 +239,7 @@ export class TiktokProvider extends SocialAbstract implements SocialProvider {
     if (body.indexOf('url_ownership_unverified') > -1) {
       return {
         type: 'bad-body' as const,
-        value:
-          `You have to upload the picture/video to ${BRAND} when sending a URL`,
+        value: `You have to upload the picture/video to ${BRAND} when sending a URL`,
       };
     }
 
@@ -416,6 +415,55 @@ export class TiktokProvider extends SocialAbstract implements SocialProvider {
       picture: avatar_url,
       username: username,
     };
+  }
+
+  // TikTok's Content Sharing Guidelines (Point 1): read the creator's current
+  // posting options when the post form is shown, and stop a publish when
+  // TikTok says the creator cannot post right now. Called by the composer
+  // through /integrations/function, and by postPending before a Direct Post.
+  // Returns null when TikTok's answer can't be read, so callers fall back to
+  // the normal publish flow and its error handling.
+  async creatorInfo(accessToken: string) {
+    try {
+      const { data, error } = await (
+        await fetch(
+          'https://open.tiktokapis.com/v2/post/publish/creator_info/query/',
+          {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json; charset=UTF-8',
+              Authorization: `Bearer ${accessToken}`,
+            },
+          }
+        )
+      ).json();
+
+      const code: string = error?.code || 'ok';
+      // Only a posting limit or ban means "cannot post now". Token problems
+      // are left to the publish call, which already handles refreshes.
+      const canPost = !(
+        code.startsWith('spam_risk') || code === 'reached_active_user_cap'
+      );
+
+      return {
+        nickname: (data?.creator_nickname as string) || '',
+        username: (data?.creator_username as string) || '',
+        avatar: (data?.creator_avatar_url as string) || '',
+        privacyLevelOptions: (data?.privacy_level_options as string[]) || [],
+        commentDisabled: !!data?.comment_disabled,
+        duetDisabled: !!data?.duet_disabled,
+        stitchDisabled: !!data?.stitch_disabled,
+        maxVideoPostDurationSec:
+          (data?.max_video_post_duration_sec as number) || 0,
+        canPost,
+        reason: canPost
+          ? ''
+          : this.handleErrors(JSON.stringify(error))?.value ||
+            'TikTok says this account cannot post right now. Please try again later.',
+      };
+    } catch {
+      return null;
+    }
   }
 
   async maxVideoLength(accessToken: string) {
@@ -831,6 +879,33 @@ export class TiktokProvider extends SocialAbstract implements SocialProvider {
     const [firstPost] = postDetails;
     const isPhoto = !hasExtension(firstPost?.media?.[0]?.path, 'mp4');
     const videoPath = firstPost?.media?.[0]?.path!;
+
+    // Point 1b / 2b of TikTok's Content Sharing Guidelines: check the creator
+    // can post right now, and that the chosen privacy level is still one
+    // TikTok offers this account, before sending anything.
+    if (this.contentPostingMethod(firstPost) === 'DIRECT_POST') {
+      const creator = await this.creatorInfo(accessToken);
+      if (creator && !creator.canPost) {
+        throw new BadBody(
+          'tiktok-error-upload',
+          JSON.stringify(creator),
+          Buffer.from(JSON.stringify(creator)),
+          creator.reason
+        );
+      }
+      if (
+        creator?.privacyLevelOptions?.length &&
+        firstPost.settings.privacy_level &&
+        !creator.privacyLevelOptions.includes(firstPost.settings.privacy_level)
+      ) {
+        throw new BadBody(
+          'tiktok-error-upload',
+          JSON.stringify(creator),
+          Buffer.from(JSON.stringify(creator)),
+          'The chosen "Who can see this video" option is not available for this TikTok account. Please edit the post and choose another one.'
+        );
+      }
+    }
 
     // For videos we only need the total size up front (HEAD / statSync) so we
     // can init the upload; the bytes themselves are streamed later, never fully
