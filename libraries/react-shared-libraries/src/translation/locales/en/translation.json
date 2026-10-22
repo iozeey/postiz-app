@@ -769,5 +769,11 @@
   "republish_the_post": "Republish the post",
   "post_already_published_republish_warning": "This post was already published. Republishing will publish it again to",
   "republish_at": "at",
-  "republish_recurring_note": "This is a recurring post: your changes apply to all future recurrences starting now."
+  "republish_recurring_note": "This is a recurring post: your changes apply to all future recurrences starting now.",
+  "tiktok_branded_content_cannot_be_private": "Branded content visibility cannot be set to private.",
+  "tiktok_photo_labeled_paid_partnership": "Your photo will be labeled as \"Paid partnership\".",
+  "tiktok_video_labeled_paid_partnership": "Your video will be labeled as \"Paid partnership\".",
+  "tiktok_photo_labeled_promotional": "Your photo will be labeled as \"Promotional content\".",
+  "tiktok_video_labeled_promotional": "Your video will be labeled as \"Promotional content\".",
+  "tiktok_disclose_choose_option": "You need to indicate if your content promotes yourself, a third party, or both."
 }
