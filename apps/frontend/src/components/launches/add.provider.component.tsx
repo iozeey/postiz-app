@@ -281,7 +281,8 @@ const ExtensionNotFound: FC = () => {
       <p className="text-[14px] text-textColor/80">
         {t(
           'extension_not_available',
-          'The Postiz browser extension is not installed. You need to install it before connecting this channel.'
+          'The {{brand}} browser extension is not installed. You need to install it before connecting this channel.',
+          { brand: BRAND }
         )}
       </p>
       <div className="flex gap-[10px]">
@@ -575,7 +576,8 @@ export const AddProviderComponent: FC<{
             toaster.show(
               t(
                 'extension_not_installed',
-                'Postiz browser extension is not installed or not reachable.'
+                '{{brand}} browser extension is not installed or not reachable.',
+                { brand: BRAND }
               ),
               'warning'
             );

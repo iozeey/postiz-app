@@ -6,6 +6,7 @@ import { useVariables } from '@gitroom/react/helpers/variable.context';
 import { useUser } from '@gitroom/frontend/components/layout/user.context';
 import { useT } from '@gitroom/react/translation/get.transation.service.client';
 import DeleteAccountComponent from '@gitroom/frontend/components/settings/delete-account.component';
+import { BRAND } from '@gitroom/frontend/brand';
 const useFaqList = () => {
   const { isGeneral } = useVariables();
   const user = useUser();
@@ -67,7 +68,7 @@ For example, you can schedule your posts on X, Facebook, Instagram, TikTok, YouT
             description: t(
               'faq_delete_account_description',
               `If you don't want to continue using ${
-                isGeneral ? 'Postiz' : 'Gitroom'
+                isGeneral ? BRAND : 'Gitroom'
               }, you can delete your account, including all your organizations, channels and posts. This action cannot be undone.`
             ),
             content: <DeleteAccountComponent isLink={true} />,

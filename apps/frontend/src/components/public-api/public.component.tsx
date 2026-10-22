@@ -12,6 +12,7 @@ import { useDecisionModal } from '@gitroom/frontend/components/layout/new-modal'
 import { DeveloperComponent } from '@gitroom/frontend/components/developer/developer.component';
 import { McpClientIcon } from '@gitroom/frontend/components/public-api/mcp.client.icons';
 import clsx from 'clsx';
+import { BRAND } from '@gitroom/frontend/brand';
 
 // Remote clients can't set headers, they get a URL to paste (hint = where)
 export const remoteMcpClients = {
@@ -392,7 +393,9 @@ const McpSection = ({
                   onClick={() => setAuth(m)}
                 >
                   {m === 'oauth'
-                    ? t('sign_in_no_api_key', 'Sign in with Postiz (no API key)')
+                    ? t('sign_in_no_api_key', 'Sign in with {{brand}} (no API key)', {
+                        brand: BRAND,
+                      })
                     : t('api_key', 'API Key')}
                 </button>
               ))}
@@ -435,7 +438,8 @@ const McpSection = ({
               !chatOnly &&
               ` ${t(
                 'oauth_sign_in_hint',
-                'Your agent will open a browser window to sign in to Postiz.'
+                'Your agent will open a browser window to sign in to {{brand}}.',
+                { brand: BRAND }
               )}`}
           </div>
           <pre className="bg-newBgColorInner border border-newBorder rounded-[8px] p-[16px] text-[13px] whitespace-pre-wrap break-all overflow-x-auto leading-[1.6]">
@@ -713,7 +717,8 @@ const PublicApiContent = () => {
         <br />
         {t(
           'api_auth_note_line2',
-          'If you are building a product that schedules posts on behalf of other Postiz users,'
+          'If you are building a product that schedules posts on behalf of other {{brand}} users,',
+          { brand: BRAND }
         )}
         <br />
         {t(
