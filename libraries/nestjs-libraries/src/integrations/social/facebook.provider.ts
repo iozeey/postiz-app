@@ -878,6 +878,9 @@ export class FacebookProvider extends SocialAbstract implements SocialProvider {
                     body: JSON.stringify({
                       url: media.path,
                       published: false,
+                      ...(media.alt?.trim()
+                        ? { alt_text_custom: media.alt.trim() }
+                        : {}),
                     }),
                   },
                   'upload images slides'

@@ -748,6 +748,7 @@ export const MultiMediaComponent: FC<{
   value?: Array<{
     path: string;
     id: string;
+    alt?: string;
   }>;
   text: string;
   name: string;
@@ -862,6 +863,38 @@ export const MultiMediaComponent: FC<{
     [currentMedia]
   );
 
+  const openMediaSettings = useCallback(
+    (media: NonNullable<typeof currentMedia>[number]) => {
+      modals.openModal({
+        title: t('media_settings', 'Media Settings'),
+        size: '720px',
+        children: (close) => (
+          <MediaComponentInner
+            media={media as any}
+            onClose={close}
+            onSelect={(value: any) => {
+              onChange({
+                target: {
+                  name: 'upload',
+                  value: currentMedia.map((p) => {
+                    if (p.id === media.id) {
+                      return {
+                        ...p,
+                        ...value,
+                      };
+                    }
+                    return p;
+                  }),
+                },
+              });
+            }}
+          />
+        ),
+      });
+    },
+    [currentMedia, t]
+  );
+
   const designMedia = useCallback(() => {
     if (!!user?.tier?.ai && !dummy) {
       modals.openModal({
@@ -896,34 +929,7 @@ export const MultiMediaComponent: FC<{
 
                     <div className="w-full h-full relative group">
                       <div
-                        onClick={async () => {
-                          modals.openModal({
-                            title: t('media_settings', 'Media Settings'),
-                            size: '720px',
-                            children: (close) => (
-                              <MediaComponentInner
-                                media={media as any}
-                                onClose={close}
-                                onSelect={(value: any) => {
-                                  onChange({
-                                    target: {
-                                      name: 'upload',
-                                      value: currentMedia.map((p) => {
-                                        if (p.id === media.id) {
-                                          return {
-                                            ...p,
-                                            ...value,
-                                          };
-                                        }
-                                        return p;
-                                      }),
-                                    },
-                                  });
-                                }}
-                              />
-                            ),
-                          });
-                        }}
+                        onClick={() => openMediaSettings(media)}
                         className="absolute top-[50%] left-[50%] -translate-x-[50%] -translate-y-[50%] bg-black/80 rounded-[10px] opacity-0 group-hover:opacity-100 transition-opacity z-[9]"
                       >
                         <MediaSettingsIcon className="cursor-pointer relative z-[200]" />
@@ -942,6 +948,21 @@ export const MultiMediaComponent: FC<{
                       onClick={clearMedia(index)}
                       className="absolute -end-[4px] -top-[4px] mobile:-end-[8px] mobile:-top-[8px] mobile:w-[24px] mobile:h-[24px] z-[20] rounded-full bg-white"
                     />
+
+                    <div
+                      onClick={() => openMediaSettings(media)}
+                      title={
+                        media.alt
+                          ? `${t('alt_text', 'Alt text')}: ${media.alt}`
+                          : t('add_alt_text', 'Add alt text')
+                      }
+                      className={clsx(
+                        'absolute start-[50%] -translate-x-[50%] rtl:translate-x-[50%] -bottom-[7px] z-[20] px-[4px] rounded-[4px] text-[9px] leading-[13px] font-[600] text-white cursor-pointer',
+                        media.alt ? 'bg-btnPrimary' : 'bg-black/80'
+                      )}
+                    >
+                      {media.alt ? 'ALT ✓' : '+ALT'}
+                    </div>
                   </div>
               ))}
             </ReactSortable>
