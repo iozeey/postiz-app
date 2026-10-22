@@ -1,5 +1,16 @@
 import {
-  IsBoolean, ValidateIf, IsIn, IsString, MaxLength, IsOptional, IsDefined, IsNumber, Min, Max, ValidateNested
+  IsBoolean,
+  ValidateIf,
+  IsIn,
+  IsString,
+  MaxLength,
+  IsOptional,
+  IsDefined,
+  IsNumber,
+  Min,
+  Max,
+  ValidateNested,
+  Equals,
 } from 'class-validator';
 import { Type } from 'class-transformer';
 import { JSONSchema } from 'class-validator-jsonschema';
@@ -77,16 +88,23 @@ export class TikTokDto {
   })
   title: string;
 
-  @IsIn([
-    'PUBLIC_TO_EVERYONE',
-    'MUTUAL_FOLLOW_FRIENDS',
-    'FOLLOWER_OF_CREATOR',
-    'SELF_ONLY',
-  ])
-  @IsString()
+  // TikTok's Content Sharing Guidelines require the user to pick the privacy
+  // level themselves, so the composer has no default. It is only required for
+  // DIRECT_POST: on UPLOAD the field is hidden and TikTok ignores it.
+  @ValidateIf((p) => p.content_posting_method !== 'UPLOAD')
+  @IsIn(
+    [
+      'PUBLIC_TO_EVERYONE',
+      'MUTUAL_FOLLOW_FRIENDS',
+      'FOLLOWER_OF_CREATOR',
+      'SELF_ONLY',
+    ],
+    { message: 'Choose who can see this video' }
+  )
+  @IsString({ message: 'Choose who can see this video' })
   @JSONSchema({
     description:
-      'Applied only when content_posting_method=DIRECT_POST. Ignored by TikTok on UPLOAD.',
+      'Required when content_posting_method=DIRECT_POST, and must be chosen by the user. Ignored by TikTok on UPLOAD.',
   })
   privacy_level:
     | 'PUBLIC_TO_EVERYONE'
@@ -125,9 +143,17 @@ export class TikTokDto {
   autoAddMusic: 'yes' | 'no';
 
   @IsBoolean()
+  // TikTok does not allow branded content to be private ("Self only").
+  @ValidateIf(
+    (p) =>
+      p.content_posting_method !== 'UPLOAD' && p.privacy_level === 'SELF_ONLY'
+  )
+  @Equals(false, {
+    message: 'Branded content visibility cannot be set to private.',
+  })
   @JSONSchema({
     description:
-      'Applied only when content_posting_method=DIRECT_POST. Ignored by TikTok on UPLOAD.',
+      'Applied only when content_posting_method=DIRECT_POST. Ignored by TikTok on UPLOAD. Cannot be true when privacy_level is SELF_ONLY.',
   })
   brand_content_toggle: boolean;
 
@@ -145,6 +171,24 @@ export class TikTokDto {
       'Applied only when content_posting_method=DIRECT_POST. Ignored by TikTok on UPLOAD.',
   })
   brand_organic_toggle: boolean;
+
+  // The composer's "Disclose Video Content" switch. Optional, so API clients
+  // that never send it are unaffected. When it is on, TikTok requires at least
+  // one of "Your brand" / "Branded content" before the post can be published.
+  @IsOptional()
+  @ValidateIf(
+    (p) =>
+      p.disclose === true && !p.brand_organic_toggle && !p.brand_content_toggle
+  )
+  @Equals(false, {
+    message:
+      'You need to indicate if your content promotes yourself, a third party, or both.',
+  })
+  @JSONSchema({
+    description:
+      'Marks the post as commercial content. When true, brand_organic_toggle and/or brand_content_toggle must be true.',
+  })
+  disclose?: boolean;
 
   @Type(() => TikTokMusic)
   @ValidateNested()

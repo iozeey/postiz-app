@@ -1,9 +1,6 @@
 'use client';
 
-import {
-  FC,
-  useMemo,
-} from 'react';
+import { FC, useEffect, useMemo } from 'react';
 import {
   PostComment,
   withProvider,
@@ -23,7 +20,7 @@ import { TikTokLocationSelector } from '@gitroom/frontend/components/new-launch/
 const TikTokSettings: FC<{
   values?: any;
 }> = (props) => {
-  const { watch, register } = useSettings();
+  const { watch, register, setValue } = useSettings();
   const { value, integration } = useIntegration();
   const t = useT();
 
@@ -32,18 +29,35 @@ const TikTokSettings: FC<{
   const isBusiness = integration?.identifier === 'tiktok-business';
 
   const isTitle = useMemo(() => {
-    return value?.[0]?.image?.some((p) => (p?.path?.indexOf?.('mp4') ?? -1) === -1);
+    return value?.[0]?.image?.some(
+      (p) => (p?.path?.indexOf?.('mp4') ?? -1) === -1
+    );
   }, [value]);
 
   const hasMedia = (value?.[0]?.image?.length ?? 0) > 0;
   const isVideo = hasMedia && !isTitle;
+  const isPhoto = hasMedia && !isVideo;
 
   const disclose = watch('disclose');
   const autoAddMusic = watch('autoAddMusic');
   const brand_organic_toggle = watch('brand_organic_toggle');
   const brand_content_toggle = watch('brand_content_toggle');
   const content_posting_method = watch('content_posting_method');
+  const privacy_level = watch('privacy_level');
   const isUploadMode = content_posting_method === 'UPLOAD';
+
+  // TikTok's Content Sharing Guidelines: branded content can't be private, so
+  // "Self only" is disabled while it is ticked, and "Branded content" is
+  // disabled while the post is "Self only".
+  const isPrivate = privacy_level === 'SELF_ONLY';
+
+  // Turning the disclosure off must also clear its two options, or a hidden
+  // tick would still label the post as commercial on TikTok.
+  useEffect(() => {
+    if (disclose) return;
+    if (brand_organic_toggle) setValue('brand_organic_toggle', false);
+    if (brand_content_toggle) setValue('brand_content_toggle', false);
+  }, [disclose, brand_organic_toggle, brand_content_toggle, setValue]);
 
   // TikTok ignores every setting except the title / content when the posting
   // method is UPLOAD, so we hide them rather than pretend they apply. The fields
@@ -137,17 +151,35 @@ const TikTokSettings: FC<{
         <Select
           label={t('label_who_can_see_this_video', 'Who can see this video?')}
           disabled={isUploadMode}
-          {...register('privacy_level', {
-            value: 'PUBLIC_TO_EVERYONE',
-          })}
+          {...register('privacy_level')}
         >
           <option value="">{t('select', 'Select')}</option>
           {privacyLevel.map((item) => (
-            <option key={item.value} value={item.value}>
+            <option
+              key={item.value}
+              value={item.value}
+              disabled={item.value === 'SELF_ONLY' && brand_content_toggle}
+              title={
+                item.value === 'SELF_ONLY' && brand_content_toggle
+                  ? t(
+                      'tiktok_branded_content_cannot_be_private',
+                      'Branded content visibility cannot be set to private.'
+                    )
+                  : undefined
+              }
+            >
               {item.label}
             </option>
           ))}
         </Select>
+        {brand_content_toggle && (
+          <div className="text-[14px] -mt-[18px] mb-[18px] text-balance">
+            {t(
+              'tiktok_branded_content_cannot_be_private',
+              'Branded content visibility cannot be set to private.'
+            )}
+          </div>
+        )}
       </div>
       <div className="text-[14px] mt-[10px] mb-[18px] text-balance">
         {t(
@@ -169,7 +201,12 @@ const TikTokSettings: FC<{
           </option>
         ))}
       </Select>
-      {isUploadMode && <div className="-mt-[23px] mb-[23px] text-red-600">After posting, you will find a notification about this post in your TikTok inbox, not in TikTok Studio.</div>}
+      {isUploadMode && (
+        <div className="-mt-[23px] mb-[23px] text-red-600">
+          After posting, you will find a notification about this post in your
+          TikTok inbox, not in TikTok Studio.
+        </div>
+      )}
       <div className={clsx('flex flex-col', directPostOnly)}>
         <Select
           label={
@@ -193,7 +230,7 @@ const TikTokSettings: FC<{
           {isBusiness
             ? t(
                 'tiktok_random_music_only_for_photos',
-                'This feature is available only for photos, it adds a random trending track from TikTok\'s commercial music library.'
+                "This feature is available only for photos, it adds a random trending track from TikTok's commercial music library."
               )
             : t(
                 'this_feature_available_only_for_photos',
@@ -223,35 +260,39 @@ const TikTokSettings: FC<{
             />
           </div>
         )}
-        <hr className="mb-[15px] border-tableBorder" />
-        <div className="text-[14px] mb-[10px]">
-          {t('tiktok_video_features', 'Video features')}
-        </div>
-        <div className="flex gap-[40px]">
-          <Checkbox
-            variant="hollow"
-            label={t('label_duet', 'Allow Duet')}
-            disabled={isUploadMode}
-            {...register('duet', {
-              value: false,
-            })}
-          />
-          <Checkbox
-            label={t('label_stitch', 'Allow Stitch')}
-            variant="hollow"
-            disabled={isUploadMode}
-            {...register('stitch', {
-              value: false,
-            })}
-          />
-          <Checkbox
-            label={t('video_made_with_ai', 'Video made with AI')}
-            variant="hollow"
-            disabled={isUploadMode}
-            {...register('video_made_with_ai', {
-              value: false,
-            })}
-          />
+        {/* Duet, Stitch and the AI label don't exist for photo posts, so only
+            Allow Comments is shown for them. The fields stay registered. */}
+        <div className={clsx(isPhoto && 'invisible h-0 overflow-hidden')}>
+          <hr className="mb-[15px] border-tableBorder" />
+          <div className="text-[14px] mb-[10px]">
+            {t('tiktok_video_features', 'Video features')}
+          </div>
+          <div className="flex gap-[40px]">
+            <Checkbox
+              variant="hollow"
+              label={t('label_duet', 'Allow Duet')}
+              disabled={isUploadMode}
+              {...register('duet', {
+                value: false,
+              })}
+            />
+            <Checkbox
+              label={t('label_stitch', 'Allow Stitch')}
+              variant="hollow"
+              disabled={isUploadMode}
+              {...register('stitch', {
+                value: false,
+              })}
+            />
+            <Checkbox
+              label={t('video_made_with_ai', 'Video made with AI')}
+              variant="hollow"
+              disabled={isUploadMode}
+              {...register('video_made_with_ai', {
+                value: false,
+              })}
+            />
+          </div>
         </div>
         <hr className="my-[15px] mb-[25px] border-tableBorder" />
         <div className="flex flex-col gap-[20px]">
@@ -260,7 +301,7 @@ const TikTokSettings: FC<{
             variant="hollow"
             disabled={isUploadMode}
             {...register('comment', {
-              value: true,
+              value: false,
             })}
           />
           <Checkbox
@@ -288,10 +329,33 @@ const TikTokSettings: FC<{
                 </svg>
               </div>
               <div>
-                {t(
-                  'your_video_will_be_labeled_promotional',
-                  'Your video will be labeled "Promotional Content".'
-                )}
+                {/* TikTok's wording: "Paid partnership" whenever branded
+                    content is ticked, "Promotional content" for your brand
+                    only, and a prompt while neither is chosen. */}
+                {brand_content_toggle
+                  ? isPhoto
+                    ? t(
+                        'tiktok_photo_labeled_paid_partnership',
+                        'Your photo will be labeled as "Paid partnership".'
+                      )
+                    : t(
+                        'tiktok_video_labeled_paid_partnership',
+                        'Your video will be labeled as "Paid partnership".'
+                      )
+                  : brand_organic_toggle
+                  ? isPhoto
+                    ? t(
+                        'tiktok_photo_labeled_promotional',
+                        'Your photo will be labeled as "Promotional content".'
+                      )
+                    : t(
+                        'tiktok_video_labeled_promotional',
+                        'Your video will be labeled as "Promotional content".'
+                      )
+                  : t(
+                      'tiktok_disclose_choose_option',
+                      'You need to indicate if your content promotes yourself, a third party, or both.'
+                    )}
                 <br />
                 {t(
                   'this_cannot_be_changed_once_posted',
@@ -307,7 +371,12 @@ const TikTokSettings: FC<{
             )}
           </div>
         </div>
-        <div className={clsx(!disclose && 'invisible h-0 overflow-hidden', 'mt-[20px]')}>
+        <div
+          className={clsx(
+            !disclose && 'invisible h-0 overflow-hidden',
+            'mt-[20px]'
+          )}
+        >
           <Checkbox
             variant="hollow"
             label={t('label_your_brand', 'Your brand')}
@@ -330,7 +399,7 @@ const TikTokSettings: FC<{
           <Checkbox
             variant="hollow"
             label={t('label_branded_content', 'Branded content')}
-            disabled={isUploadMode}
+            disabled={isUploadMode || isPrivate}
             {...register('brand_content_toggle', {
               value: false,
             })}
@@ -345,36 +414,44 @@ const TikTokSettings: FC<{
               'this_video_will_be_classified_branded_content',
               'This video will be classified as Branded Content.'
             )}
+            {isPrivate && (
+              <>
+                <br />
+                {t(
+                  'tiktok_branded_content_cannot_be_private',
+                  'Branded content visibility cannot be set to private.'
+                )}
+              </>
+            )}
           </div>
-          {(brand_organic_toggle || brand_content_toggle) && (
-            <div className="my-[10px] text-[14px] text-balance">
-              {t(
-                'by_posting_you_agree_to_tiktoks',
-                "By posting, you agree to TikTok's"
-              )}
-              {[
-                brand_organic_toggle || brand_content_toggle ? (
-                  <a
-                    target="_blank"
-                    className="text-[#B69DEC] hover:underline"
-                    href="https://www.tiktok.com/legal/page/global/music-usage-confirmation/en"
-                  >
-                    {t('music_usage_confirmation', 'Music Usage Confirmation')}
-                  </a>
-                ) : undefined,
-                brand_content_toggle ? <> {t('and', 'and')} </> : undefined,
-                brand_content_toggle ? (
-                  <a
-                    target="_blank"
-                    className="text-[#B69DEC] hover:underline"
-                    href="https://www.tiktok.com/legal/page/global/bc-policy/en"
-                  >
-                    {t('branded_content_policy', 'Branded Content Policy')}
-                  </a>
-                ) : undefined,
-              ].filter((f) => f)}
-            </div>
+        </div>
+        {/* TikTok requires this declaration before every Direct Post, and
+            names the Branded Content Policy first when branded content is on. */}
+        <div className="mt-[20px] text-[14px] text-balance">
+          {t(
+            'by_posting_you_agree_to_tiktoks',
+            "By posting, you agree to TikTok's"
+          )}{' '}
+          {brand_content_toggle && (
+            <>
+              <a
+                target="_blank"
+                className="text-[#B69DEC] hover:underline"
+                href="https://www.tiktok.com/legal/page/global/bc-policy/en"
+              >
+                {t('branded_content_policy', 'Branded Content Policy')}
+              </a>{' '}
+              {t('and', 'and')}{' '}
+            </>
           )}
+          <a
+            target="_blank"
+            className="text-[#B69DEC] hover:underline"
+            href="https://www.tiktok.com/legal/page/global/music-usage-confirmation/en"
+          >
+            {t('music_usage_confirmation', 'Music Usage Confirmation')}
+          </a>
+          .
         </div>
       </div>
     </div>

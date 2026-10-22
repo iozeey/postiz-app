@@ -896,5 +896,11 @@
   "thumbnails_and_alt_text": "Thumbnails & alt text",
   "media_settings_section_description": "Click a media item to set its alt text, or its thumbnail if it is a video.",
   "media_settings_section_tooltip": "Thumbnails apply to videos in the main post and are sent to every channel that supports them. YouTube may ignore them on videos it treats as Shorts (vertical, up to 3 minutes) without failing the publish, and requires a phone-verified channel for custom thumbnails. If YouTube rejects the thumbnail the video is still published, and Postiz cannot check eligibility in advance.",
-  "youtube_thumbnail_overrides_media": "This post has a YouTube-specific thumbnail, which overrides the thumbnail set in the media settings."
+  "youtube_thumbnail_overrides_media": "This post has a YouTube-specific thumbnail, which overrides the thumbnail set in the media settings.",
+  "tiktok_branded_content_cannot_be_private": "Branded content visibility cannot be set to private.",
+  "tiktok_photo_labeled_paid_partnership": "Your photo will be labeled as \"Paid partnership\".",
+  "tiktok_video_labeled_paid_partnership": "Your video will be labeled as \"Paid partnership\".",
+  "tiktok_photo_labeled_promotional": "Your photo will be labeled as \"Promotional content\".",
+  "tiktok_video_labeled_promotional": "Your video will be labeled as \"Promotional content\".",
+  "tiktok_disclose_choose_option": "You need to indicate if your content promotes yourself, a third party, or both."
 }
