@@ -9,6 +9,7 @@ import { useModals } from '@gitroom/frontend/components/layout/new-modal';
 import { Button } from '@gitroom/react/form/button';
 import copy from 'copy-to-clipboard';
 import Loading from '@gitroom/frontend/components/layout/loading';
+import { BRAND } from '@gitroom/frontend/brand';
 export const FarcasterProvider = () => {
   const fetch = useFetch();
   const modal = useModals();
@@ -190,7 +191,8 @@ export const FarcasterApproval: FC<{
       <div className="max-w-[400px]">
         {t(
           'farcaster_scan_instructions',
-          'Scan the QR code with your phone, or copy the link and open it on your phone, then approve Postiz in the Farcaster app.'
+          'Scan the QR code with your phone, or copy the link and open it on your phone, then approve {{brand}} in the Farcaster app.',
+          { brand: BRAND }
         )}
       </div>
       <Button onClick={copyLink}>

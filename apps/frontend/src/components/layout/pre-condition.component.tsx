@@ -3,13 +3,14 @@ import { useSearchParams } from 'next/navigation';
 import { ModalWrapperComponent } from '@gitroom/frontend/components/new-launch/modal.wrapper.component';
 import { useModals } from '@gitroom/frontend/components/layout/new-modal';
 import { Button } from '@gitroom/react/form/button';
+import { BRAND } from '@gitroom/frontend/brand';
 
 export const PreConditionComponentModal: FC = () => {
   const modal = useModals();
   return (
     <div className="flex flex-col gap-[16px]">
       <div className="whitespace-pre-line">
-        This social channel was previously connected to another Postiz account.
+        This social channel was previously connected to another {BRAND} account.
         {'\n'}
         To connect it during your trial, you can end the trial now: your plan's
         first payment is charged today instead of at the end of the trial, and
