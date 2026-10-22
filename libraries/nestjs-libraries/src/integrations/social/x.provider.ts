@@ -711,6 +711,16 @@ export class XProvider extends SocialAbstract implements SocialProvider {
           continue;
         }
 
+        // Alt text is best-effort: a rejected description must not cost the
+        // whole post, X just shows the media without it.
+        if (m.alt?.trim()) {
+          await this.uploadWithRateLimitRetry(() =>
+            client.v2.createMediaMetadata(uploaded.mediaId, {
+              alt_text: { text: m.alt!.trim().slice(0, 1000) },
+            })
+          ).catch(() => undefined);
+        }
+
         media[p.id] = media[p.id] || [];
         media[p.id].push(uploaded.mediaId);
 

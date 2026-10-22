@@ -35,6 +35,9 @@ type LinkedinPendingData = {
   isPdf: boolean;
   pdfTitle?: string;
   mediaIds: string[];
+  // Alt text per uploaded image urn. Optional: pending data written before
+  // alt text support has none and posts without it like before.
+  mediaAlts?: Record<string, string>;
   // Media whose processing status can be read via GET: videos for every token,
   // images/documents only for organization tokens.
   poll: { urn: string; endpoint: 'videos' | 'images' | 'documents' }[];
@@ -595,12 +598,14 @@ export class LinkedinProvider extends SocialAbstract implements SocialProvider {
     type: 'company' | 'personal'
   ): Promise<{
     mediaUploads: Record<string, string[]>;
+    mediaAlts: Record<string, string>;
     poll: { urn: string; endpoint: 'videos' | 'images' | 'documents' }[];
     graceChecks: number;
   }> {
     // Media is uploaded sequentially on purpose: uploading everything with
     // Promise.all holds every file in memory at the same time.
     const mediaUploads: Record<string, string[]> = {};
+    const mediaAlts: Record<string, string> = {};
     const poll: { urn: string; endpoint: 'videos' | 'images' | 'documents' }[] =
       [];
     let graceChecks = 0;
@@ -639,6 +644,10 @@ export class LinkedinProvider extends SocialAbstract implements SocialProvider {
         mediaUploads[post.id] = mediaUploads[post.id] || [];
         mediaUploads[post.id].push(uploaded.id);
 
+        if (media.alt?.trim()) {
+          mediaAlts[uploaded.id] = media.alt.trim();
+        }
+
         if (uploaded.poll) {
           poll.push(uploaded.poll);
         }
@@ -651,7 +660,7 @@ export class LinkedinProvider extends SocialAbstract implements SocialProvider {
       }
     }
 
-    return { mediaUploads, poll, graceChecks };
+    return { mediaUploads, mediaAlts, poll, graceChecks };
   }
 
   private async prepareMediaBuffer(mediaUrl: string): Promise<Buffer> {
@@ -687,7 +696,15 @@ export class LinkedinProvider extends SocialAbstract implements SocialProvider {
     return await (keepFormat ? pipeline : pipeline.toFormat('jpeg')).toBuffer();
   }
 
-  private buildPostContent(isPdf: boolean, mediaIds: string[], pdfTitle?: string) {
+  private buildPostContent(
+    isPdf: boolean,
+    mediaIds: string[],
+    pdfTitle?: string,
+    mediaAlts: Record<string, string> = {}
+  ) {
+    const altText = (id: string) =>
+      !isPdf && mediaAlts[id] ? { altText: mediaAlts[id].slice(0, 4086) } : {};
+
     if (mediaIds.length === 0) {
       return {};
     }
@@ -698,6 +715,7 @@ export class LinkedinProvider extends SocialAbstract implements SocialProvider {
           media: {
             ...(isPdf ? { title: pdfTitle || 'slides' } : {}),
             id: mediaIds[0],
+            ...altText(mediaIds[0]),
           },
         },
       };
@@ -706,7 +724,7 @@ export class LinkedinProvider extends SocialAbstract implements SocialProvider {
     return {
       content: {
         multiImage: {
-          images: mediaIds.map((id) => ({ id })),
+          images: mediaIds.map((id) => ({ id, ...altText(id) })),
         },
       },
     };
@@ -718,7 +736,8 @@ export class LinkedinProvider extends SocialAbstract implements SocialProvider {
     message: string,
     mediaIds: string[],
     isPdf: boolean,
-    pdfTitle?: string
+    pdfTitle?: string,
+    mediaAlts?: Record<string, string>
   ) {
     const author =
       type === 'personal' ? `urn:li:person:${id}` : `urn:li:organization:${id}`;
@@ -732,7 +751,7 @@ export class LinkedinProvider extends SocialAbstract implements SocialProvider {
         targetEntities: [] as string[],
         thirdPartyDistributionChannels: [] as string[],
       },
-      ...this.buildPostContent(isPdf, mediaIds, pdfTitle),
+      ...this.buildPostContent(isPdf, mediaIds, pdfTitle, mediaAlts),
       lifecycleState: 'PUBLISHED',
       isReshareDisabledByAuthor: false,
     };
@@ -745,7 +764,8 @@ export class LinkedinProvider extends SocialAbstract implements SocialProvider {
     mediaIds: string[],
     type: 'company' | 'personal',
     isPdf: boolean,
-    pdfTitle?: string
+    pdfTitle?: string,
+    mediaAlts?: Record<string, string>
   ): Promise<string> {
     const postPayload = this.createLinkedInPostPayload(
       authorId,
@@ -753,7 +773,8 @@ export class LinkedinProvider extends SocialAbstract implements SocialProvider {
       message,
       mediaIds,
       isPdf,
-      pdfTitle
+      pdfTitle,
+      mediaAlts
     );
 
     const response = await this.fetch(`https://api.linkedin.com/rest/posts`, {
@@ -856,12 +877,13 @@ export class LinkedinProvider extends SocialAbstract implements SocialProvider {
     // Upload the media now; the asynchronous processing wait moves to
     // checkPostStatus and the post itself is only created by finalizePost, so
     // nothing here is irreversible - a failure leaves only orphaned media.
-    const { mediaUploads, poll, graceChecks } = await this.processMediaForPosts(
-      [processedFirstPost],
-      accessToken,
-      id,
-      type
-    );
+    const { mediaUploads, mediaAlts, poll, graceChecks } =
+      await this.processMediaForPosts(
+        [processedFirstPost],
+        accessToken,
+        id,
+        type
+      );
 
     return [
       {
@@ -878,6 +900,7 @@ export class LinkedinProvider extends SocialAbstract implements SocialProvider {
             ? { pdfTitle: firstPost.settings?.carousel_name || 'slides' }
             : {}),
           mediaIds: (mediaUploads[processedFirstPost.id] || []).filter(Boolean),
+          ...(Object.keys(mediaAlts).length ? { mediaAlts } : {}),
           poll,
           graceChecks,
         } as LinkedinPendingData,
@@ -1027,7 +1050,8 @@ export class LinkedinProvider extends SocialAbstract implements SocialProvider {
       (pendingData.mediaIds || []).filter(Boolean),
       pendingData.postType,
       pendingData.isPdf,
-      pendingData.pdfTitle
+      pendingData.pdfTitle,
+      pendingData.mediaAlts
     );
 
     return {

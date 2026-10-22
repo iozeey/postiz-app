@@ -35,6 +35,8 @@ type PinterestPendingData = {
   };
   imagePaths: string[];
   coverPath?: string;
+  // Optional: pending data written before alt text support has none.
+  altText?: string;
   // Arm -> confirm -> publish handshake (same as the Facebook story flow):
   // finalizePost arms without mutating, checkPostStatus witnesses, and only a
   // witnessed attempt runs the create - so a create that dies with an unknown
@@ -343,6 +345,13 @@ export class PinterestProvider
           },
           imagePaths: (postDetails?.[0]?.media || []).map((m) => m.path),
           coverPath: picture?.path,
+          ...(postDetails?.[0]?.media?.find((m) => m.alt?.trim())
+            ? {
+                altText: postDetails[0]
+                  .media!.find((m) => m.alt?.trim())!
+                  .alt!.trim(),
+              }
+            : {}),
         } as PinterestPendingData,
       },
     ];
@@ -455,6 +464,9 @@ export class PinterestProvider
             ? { title: pendingData.settings.title }
             : {}),
           description: pendingData.message,
+          ...(pendingData.altText
+            ? { alt_text: pendingData.altText.slice(0, 500) }
+            : {}),
           ...(pendingData.settings.dominant_color
             ? { dominant_color: pendingData.settings.dominant_color }
             : {}),

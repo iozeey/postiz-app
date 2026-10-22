@@ -244,7 +244,7 @@ export class ThreadsProvider extends SocialAbstract implements SocialProvider {
   private async createSingleMediaContent(
     userId: string,
     accessToken: string,
-    media: { path: string },
+    media: { path: string; alt?: string },
     message: string,
     isCarouselItem = false,
     replyToId?: string
@@ -256,6 +256,7 @@ export class ThreadsProvider extends SocialAbstract implements SocialProvider {
       ...(mediaType === 'video_url' ? { video_url: media.path } : {}),
       ...(mediaType === 'image_url' ? { image_url: media.path } : {}),
       ...(isCarouselItem ? { is_carousel_item: 'true' } : {}),
+      ...(media.alt?.trim() ? { alt_text: media.alt.trim() } : {}),
       ...(replyToId ? { reply_to_id: replyToId } : {}),
       media_type: mediaType === 'video_url' ? 'VIDEO' : 'IMAGE',
       text: message,
