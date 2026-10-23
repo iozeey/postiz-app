@@ -424,8 +424,9 @@ export class TiktokProvider extends SocialAbstract implements SocialProvider {
   // Returns null when TikTok's answer can't be read, so callers fall back to
   // the normal publish flow and its error handling.
   async creatorInfo(accessToken: string) {
+    let reply: any;
     try {
-      const { data, error } = await (
+      reply = await (
         await fetch(
           'https://open.tiktokapis.com/v2/post/publish/creator_info/query/',
           {
@@ -437,33 +438,50 @@ export class TiktokProvider extends SocialAbstract implements SocialProvider {
           }
         )
       ).json();
-
-      const code: string = error?.code || 'ok';
-      // Only a posting limit or ban means "cannot post now". Token problems
-      // are left to the publish call, which already handles refreshes.
-      const canPost = !(
-        code.startsWith('spam_risk') || code === 'reached_active_user_cap'
-      );
-
-      return {
-        nickname: (data?.creator_nickname as string) || '',
-        username: (data?.creator_username as string) || '',
-        avatar: (data?.creator_avatar_url as string) || '',
-        privacyLevelOptions: (data?.privacy_level_options as string[]) || [],
-        commentDisabled: !!data?.comment_disabled,
-        duetDisabled: !!data?.duet_disabled,
-        stitchDisabled: !!data?.stitch_disabled,
-        maxVideoPostDurationSec:
-          (data?.max_video_post_duration_sec as number) || 0,
-        canPost,
-        reason: canPost
-          ? ''
-          : this.handleErrors(JSON.stringify(error))?.value ||
-            'TikTok says this account cannot post right now. Please try again later.',
-      };
     } catch {
       return null;
     }
+
+    const { data, error } = reply || {};
+    const code: string = error?.code || 'ok';
+
+    // An expired token (TikTok tokens last 24h) must be refreshed, not read
+    // as "no creator info": /integrations/function and the post workflow both
+    // refresh the token and retry when they see RefreshToken.
+    if (
+      this.handleErrors(JSON.stringify(error || {}))?.type === 'refresh-token'
+    ) {
+      throw new RefreshToken(
+        'tiktok',
+        JSON.stringify(error),
+        Buffer.from(JSON.stringify(error))
+      );
+    }
+
+    // Only a posting limit or ban means "cannot post now". Other errors are
+    // left to the publish call, which reports them.
+    const canPost = !(
+      code.startsWith('spam_risk') || code === 'reached_active_user_cap'
+    );
+
+    return {
+      nickname: (data?.creator_nickname as string) || '',
+      username: (data?.creator_username as string) || '',
+      avatar: (data?.creator_avatar_url as string) || '',
+      privacyLevelOptions: (data?.privacy_level_options as string[]) || [],
+      commentDisabled: !!data?.comment_disabled,
+      duetDisabled: !!data?.duet_disabled,
+      stitchDisabled: !!data?.stitch_disabled,
+      maxVideoPostDurationSec:
+        (data?.max_video_post_duration_sec as number) || 0,
+      canPost,
+      reason: canPost
+        ? ''
+        : this.handleErrors(JSON.stringify(error))?.value ||
+          'TikTok says this account cannot post right now. Please try again later.',
+      // TikTok's error code when it did not answer "ok", for diagnosis.
+      errorCode: code === 'ok' ? '' : code,
+    };
   }
 
   async maxVideoLength(accessToken: string) {
