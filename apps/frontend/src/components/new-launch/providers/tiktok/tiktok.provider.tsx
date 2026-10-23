@@ -319,34 +319,38 @@ const TikTokSettings: FC<{
         </div>
       )}
       <div className={clsx('flex flex-col', directPostOnly)}>
-        <Select
-          label={
-            isBusiness
-              ? t('label_add_random_music', 'Add random music')
-              : t('label_auto_add_music', 'Auto add music')
-          }
-          disabled={isUploadMode}
-          {...register('autoAddMusic', {
-            value: 'no',
-          })}
-        >
-          <option value="">{t('select', 'Select')}</option>
-          {yesNo.map((item) => (
-            <option key={item.value} value={item.value}>
-              {item.label}
-            </option>
-          ))}
-        </Select>
-        <div className="text-[14px] mt-[10px] mb-[24px] text-balance">
-          {isBusiness
-            ? t(
-                'tiktok_random_music_only_for_photos',
-                "This feature is available only for photos, it adds a random trending track from TikTok's commercial music library."
-              )
-            : t(
-                'this_feature_available_only_for_photos',
-                'This feature available only for photos, it will add a default music that\n        you can change later.'
-              )}
+        {/* Music only applies to photo posts; TikTok ignores it for videos,
+            so it is hidden there. The field stays registered. */}
+        <div className={clsx(isVideo && 'invisible h-0 overflow-hidden')}>
+          <Select
+            label={
+              isBusiness
+                ? t('label_add_random_music', 'Add random music')
+                : t('label_auto_add_music', 'Auto add music')
+            }
+            disabled={isUploadMode}
+            {...register('autoAddMusic', {
+              value: 'no',
+            })}
+          >
+            <option value="">{t('select', 'Select')}</option>
+            {yesNo.map((item) => (
+              <option key={item.value} value={item.value}>
+                {item.label}
+              </option>
+            ))}
+          </Select>
+          <div className="text-[14px] mt-[10px] mb-[24px] text-balance">
+            {isBusiness
+              ? t(
+                  'tiktok_random_music_only_for_photos',
+                  "This feature is available only for photos, it adds a random trending track from TikTok's commercial music library."
+                )
+              : t(
+                  'this_feature_available_only_for_photos',
+                  'This feature is only available for photos. It adds default music that you can change later.'
+                )}
+          </div>
         </div>
         {isBusiness && (
           <div className="flex flex-col gap-[18px] mb-[24px]">
@@ -488,7 +492,7 @@ const TikTokSettings: FC<{
           <div className="text-[14px] my-[10px] text-balance">
             {t(
               'turn_on_to_disclose_video_promotes',
-              'Turn on to disclose that this video promotes goods or services in\n          exchange for something of value. You video could promote yourself, a\n          third party, or both.'
+              'Turn on to disclose that this content promotes goods or services in exchange for something of value. Your content could promote yourself, a third party, or both.'
             )}
           </div>
         </div>
