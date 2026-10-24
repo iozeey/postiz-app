@@ -156,6 +156,11 @@ services:
       X_API_SECRET: ${X_API_SECRET}
       TIKTOK_CLIENT_ID: ${TIKTOK_CLIENT_ID}
       TIKTOK_CLIENT_SECRET: ${TIKTOK_CLIENT_SECRET}
+      # The "TikTok" (Business API) provider has no keys yet, so it only fails with
+      # client_key=undefined and is easily confused with "Tiktok" above. Hidden from
+      # Add Channel by default; set HIDDEN_PROVIDERS in Dokploy to override (an empty
+      # value shows every provider). Comma-separated identifiers.
+      HIDDEN_PROVIDERS: ${HIDDEN_PROVIDERS-tiktok-business}
 
       # === Email (Brevo over SMTP) ===
       # Every value comes from the Dokploy Environment tab. EMAIL_PROVIDER must
