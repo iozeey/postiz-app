@@ -132,6 +132,12 @@ interface StoreState {
   setLoaded?: (loaded: boolean) => void;
   setChars: (id: string, chars: number) => void;
   chars: Record<string, number>;
+  // Per-integration reason the post can't be published right now, set by a
+  // provider's settings component (e.g. a platform rule the user hasn't met).
+  // An empty reason clears it. The post modal disables publishing and shows
+  // the reason on hover while any selected integration has one.
+  setPublishBlocker: (id: string, reason: string) => void;
+  publishBlockers: Record<string, string>;
   setComments: (comments: boolean | 'no-media') => void;
 }
 
@@ -155,6 +161,7 @@ const initialState = {
   global: [] as Values[],
   internal: [] as Internal[],
   chars: {},
+  publishBlockers: {} as Record<string, string>,
 };
 
 export const useLaunchStore = create<StoreState>()((set) => ({
@@ -369,7 +376,10 @@ export const useLaunchStore = create<StoreState>()((set) => ({
           if (item.integration.id === integrationId) {
             const targetIndex = direction === 'up' ? index - 1 : index + 1;
 
-            if (targetIndex < 0 || targetIndex >= item.integrationValue.length) {
+            if (
+              targetIndex < 0 ||
+              targetIndex >= item.integrationValue.length
+            ) {
               return item;
             }
 
@@ -632,6 +642,16 @@ export const useLaunchStore = create<StoreState>()((set) => ({
     set((state) => ({
       comments,
     })),
+  setPublishBlocker: (id: string, reason: string) =>
+    set((state) => {
+      if ((state.publishBlockers[id] || '') === reason) {
+        return {};
+      }
+      const { [id]: _removed, ...rest } = state.publishBlockers;
+      return {
+        publishBlockers: reason ? { ...rest, [id]: reason } : rest,
+      };
+    }),
   setGlobalDelay: (index: number, minutes: number) =>
     set((state) => ({
       global: state.global.map((item, i) =>

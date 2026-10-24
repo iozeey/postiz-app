@@ -18,6 +18,7 @@ import { TiktokPreview } from '@gitroom/frontend/components/new-launch/providers
 import { TikTokMusicSelector } from '@gitroom/frontend/components/new-launch/providers/tiktok/tiktok.music';
 import { TikTokLocationSelector } from '@gitroom/frontend/components/new-launch/providers/tiktok/tiktok.location';
 import { useCustomProviderFunction } from '@gitroom/frontend/components/launches/helpers/use.custom.provider.function';
+import { useLaunchStore } from '@gitroom/frontend/components/new-launch/store';
 
 type TikTokCreatorInfo = {
   nickname: string;
@@ -112,6 +113,31 @@ const TikTokSettings: FC<{
   const duet = watch('duet');
   const stitch = watch('stitch');
   const isUploadMode = content_posting_method === 'UPLOAD';
+
+  // TikTok's Content Sharing Guidelines: with the commercial disclosure on and
+  // no option chosen (Point 3a), or when creator_info says the creator can't
+  // post now (Point 1b), the publish button must be disabled, with the reason
+  // shown on hover. Both only apply to DIRECT_POST.
+  const setPublishBlocker = useLaunchStore((state) => state.setPublishBlocker);
+  const publishBlockReason = isUploadMode
+    ? ''
+    : disclose && !brand_organic_toggle && !brand_content_toggle
+    ? t(
+        'tiktok_disclose_choose_option',
+        'You need to indicate if your content promotes yourself, a third party, or both.'
+      )
+    : creator && !creator.canPost
+    ? creator.reason
+    : '';
+  useEffect(() => {
+    if (!integration?.id) return;
+    setPublishBlocker(integration.id, publishBlockReason);
+  }, [integration?.id, publishBlockReason, setPublishBlocker]);
+  useEffect(() => {
+    if (!integration?.id) return;
+    const id = integration.id;
+    return () => setPublishBlocker(id, '');
+  }, [integration?.id, setPublishBlocker]);
 
   // Keep the form inside what TikTok allows this creator: interactions they
   // turned off in the TikTok app can't stay ticked, and a privacy level TikTok

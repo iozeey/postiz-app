@@ -72,6 +72,7 @@ export const ManageModal: FC<AddEditModalProps> = (props) => {
     current,
     activateExitButton,
     setHide,
+    publishBlockers,
   } = useLaunchStore(
     useShallow((state) => ({
       hide: state.hide,
@@ -88,7 +89,18 @@ export const ManageModal: FC<AddEditModalProps> = (props) => {
       setSelectedIntegrations: state.setSelectedIntegrations,
       locked: state.locked,
       activateExitButton: state.activateExitButton,
+      publishBlockers: state.publishBlockers,
     }))
+  );
+
+  // A selected channel's settings can block publishing (see
+  // setPublishBlocker); the first reason is shown when hovering the buttons.
+  const publishBlockReason = useMemo(
+    () =>
+      selectedIntegrations
+        .map((p) => publishBlockers[p.integration.id])
+        .find((reason) => !!reason) || '',
+    [selectedIntegrations, publishBlockers]
   );
 
   useEffect(() => {
@@ -638,9 +650,17 @@ export const ManageModal: FC<AddEditModalProps> = (props) => {
             )}
             {!addEditSets && (
               <div className="group cursor-pointer relative">
+                {!!publishBlockReason && (
+                  <div className="hidden group-hover:block absolute z-[301] bottom-[calc(100%+76px)] -left-[12px] w-[260px] rounded-[8px] bg-newBgColorInner border border-tableBorder p-[12px] text-[13px] text-white text-balance">
+                    {publishBlockReason}
+                  </div>
+                )}
                 <button
                   disabled={
-                    selectedIntegrations.length === 0 || loading || locked
+                    selectedIntegrations.length === 0 ||
+                    loading ||
+                    locked ||
+                    !!publishBlockReason
                   }
                   onClick={schedule('schedule')}
                   className="text-white relative min-w-[180px] btnSub disabled:cursor-not-allowed disabled:opacity-80 outline-none gap-[8px] flex justify-center items-center h-[44px] rounded-[8px] bg-[#612BD3] ps-[20px] pe-[16px]"
@@ -677,7 +697,10 @@ export const ManageModal: FC<AddEditModalProps> = (props) => {
                   <button
                     onClick={schedule('now')}
                     disabled={
-                      selectedIntegrations.length === 0 || loading || locked
+                      selectedIntegrations.length === 0 ||
+                      loading ||
+                      locked ||
+                      !!publishBlockReason
                     }
                     className="rounded-[8px] z-[300] disabled:cursor-not-allowed disabled:opacity-80 hidden group-hover:flex absolute bottom-[100%] -left-[12px] p-[12px] w-[206px] bg-newBgColorInner"
                   >
