@@ -4,6 +4,7 @@ import { FC, useCallback, useEffect, useState } from 'react';
 import { useSearchParams } from 'next/navigation';
 import { useFetch } from '@gitroom/helpers/utils/custom.fetch';
 import { Logo } from '@gitroom/frontend/components/new-layout/logo';
+import { BRAND } from '@gitroom/frontend/brand';
 import { OAuthSelfHosted } from '@gitroom/frontend/components/oauth/self.hosted.component';
 
 export const OAuthAuthorize: FC<{ logged: boolean }> = ({ logged }) => {
@@ -223,7 +224,7 @@ export const OAuthAuthorize: FC<{ logged: boolean }> = ({ logged }) => {
             <>
               <div className="border-t border-[#2A2929] pt-[16px]">
                 <div className="text-[14px] text-gray-400 mb-[12px]">
-                  This application is requesting access to your Postiz
+                  This application is requesting access to your {BRAND}
                   account. It will be able to:
                 </div>
                 <ul className="text-[14px] list-disc list-inside space-y-[4px]">
@@ -255,7 +256,7 @@ export const OAuthAuthorize: FC<{ logged: boolean }> = ({ logged }) => {
                   onClick={signIn}
                   className="bg-[#612BD3] hover:bg-[#7B3FF2] text-white rounded-[8px] py-[10px] px-[16px] text-[14px] font-semibold transition-colors"
                 >
-                  Sign in to Postiz
+                  Sign in to {BRAND}
                 </button>
               )}
 
