@@ -852,18 +852,24 @@ export const ManageModal: FC<AddEditModalProps> = (props) => {
         },
       ]
     : [
-        {
-          label: scheduleLabel,
-          variant: 'primary',
-          onClick: schedule('schedule'),
-        },
-        ...(!dummy
+        // a channel's settings can block publishing; drafts stay allowed,
+        // like the desktop buttons
+        ...(!publishBlockReason
           ? [
               {
-                label: t('post_now', 'Post Now'),
-                variant: 'secondary' as const,
-                onClick: schedule('now'),
+                label: scheduleLabel,
+                variant: 'primary' as const,
+                onClick: schedule('schedule'),
               },
+              ...(!dummy
+                ? [
+                    {
+                      label: t('post_now', 'Post Now'),
+                      variant: 'secondary' as const,
+                      onClick: schedule('now'),
+                    },
+                  ]
+                : []),
             ]
           : []),
         {
@@ -932,6 +938,11 @@ export const ManageModal: FC<AddEditModalProps> = (props) => {
             }}
           />
         </MobileTopBar>
+        {!!publishBlockReason && (
+          <div className="hidden mobile:block mx-[16px] mt-[8px] rounded-[8px] bg-newBgColorInner border border-tableBorder p-[12px] text-[13px] text-white">
+            {publishBlockReason}
+          </div>
+        )}
         <div className="flex-1 flex mobile:contents">
           <div
             className={clsx(
