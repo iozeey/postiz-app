@@ -94,7 +94,7 @@ export const FirstBillingComponent = () => {
       title: `${BRAND} tutorial`,
       children: (
         <iframe
-          className="h-full aspect-video min-w-[800px]"
+          className="h-full aspect-video min-w-[800px] mobile:min-w-0 mobile:w-full mobile:h-auto"
           src={`https://www.youtube.com/embed/${BRAND_TUTORIAL_VIDEO}?autoplay=1`}
           title={`${BRAND} tutorial`}
           allow="autoplay"

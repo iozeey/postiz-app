@@ -52,9 +52,9 @@ export const OnboardingModal: FC<OnboardingModalProps> = ({ onClose }) => {
   );
 
   return (
-    <div className="w-full min-h-full flex-1 p-[24px] flex relative">
+    <div className="w-full min-h-full flex-1 p-[24px] mobile:p-[8px] flex relative">
       <style>{`#support-discord {display: none}`}</style>
-      <div className="flex flex-1 bg-newBgColorInner rounded-[20px] flex-col relative">
+      <div className="flex flex-1 min-w-0 bg-newBgColorInner rounded-[20px] flex-col relative">
         <button
           className="outline-none absolute end-[20px] top-[20px] mantine-UnstyledButton-root mantine-ActionIcon-root hover:bg-tableBorder cursor-pointer mantine-Modal-close mantine-1dcetaa"
           type="button"
@@ -75,14 +75,14 @@ export const OnboardingModal: FC<OnboardingModalProps> = ({ onClose }) => {
             ></path>
           </svg>
         </button>
-        <div className="flex-1 flex p-[32px]">
-          <div className="flex flex-col gap-[24px] flex-1">
+        <div className="flex-1 flex p-[32px] mobile:p-[16px] mobile:pt-[56px]">
+          <div className="flex flex-col gap-[24px] flex-1 min-w-0">
             {/* Step indicators */}
-            <div className="flex items-center justify-center gap-[16px]">
+            <div className="flex items-center justify-center gap-[16px] mobile:gap-[8px]">
               {steps.map((label, index) => (
                 <Fragment key={label}>
                   {index > 0 && (
-                    <div className="w-[40px] h-[2px] bg-boxFocused" />
+                    <div className="w-[40px] mobile:w-[16px] h-[2px] bg-boxFocused" />
                   )}
                   <div className="flex items-center gap-[8px]">
                     <div
@@ -98,7 +98,9 @@ export const OnboardingModal: FC<OnboardingModalProps> = ({ onClose }) => {
                     <span
                       className={clsx(
                         'text-[14px]',
-                        step === index + 1 ? 'font-medium' : 'text-textColor'
+                        step === index + 1
+                          ? 'font-medium'
+                          : 'text-textColor mobile:hidden'
                       )}
                     >
                       {label}
@@ -485,13 +487,13 @@ const OnboardingStep2: FC<{ onBack: () => void; onNext: () => void }> = ({
           <div className="text-[13px] font-[600] text-customColor18">
             {t('auth_method', 'Authentication')}
           </div>
-          <div className="flex gap-[6px]">
+          <div className="flex gap-[6px] mobile:flex-wrap">
             {(['oauth', 'apikey'] as const).map((m) => (
               <button
                 key={m}
                 type="button"
                 className={clsx(
-                  'cursor-pointer px-[14px] h-[36px] text-[13px] font-[500] rounded-[8px] transition-colors',
+                  'cursor-pointer px-[14px] h-[36px] mobile:h-auto mobile:min-h-[36px] mobile:py-[6px] text-[13px] font-[500] rounded-[8px] transition-colors',
                   auth === m
                     ? 'bg-[#612BD3] text-white'
                     : 'bg-btnSimple text-customColor18 hover:bg-boxHover hover:text-textColor'
@@ -626,7 +628,7 @@ const OnboardingStep2: FC<{ onBack: () => void; onNext: () => void }> = ({
           ) : (
             <>
               {connectorSection}
-              <div className="grid grid-cols-2 gap-[16px]">
+              <div className="grid grid-cols-2 mobile:grid-cols-1 gap-[16px]">
                 {mcpSection}
                 {cliSection}
               </div>
@@ -643,10 +645,10 @@ const OnboardingStep2: FC<{ onBack: () => void; onNext: () => void }> = ({
       )}
 
       {/* Action buttons */}
-      <div className="flex justify-between items-center pt-[8px] mt-auto w-full max-w-[1100px] mx-auto">
+      <div className="flex justify-between items-center pt-[8px] mt-auto w-full max-w-[1100px] mx-auto mobile:flex-wrap mobile:gap-y-[12px]">
         <button
           onClick={onBack}
-          className="group flex items-center gap-[8px] bg-transparent border-2 border-boxFocused font-medium px-[24px] py-[12px] rounded-[12px] text-[15px] transition-all"
+          className="group flex items-center gap-[8px] bg-transparent border-2 border-boxFocused font-medium px-[24px] mobile:px-[16px] py-[12px] rounded-[12px] text-[15px] transition-all"
         >
           <svg
             xmlns="http://www.w3.org/2000/svg"
@@ -665,7 +667,7 @@ const OnboardingStep2: FC<{ onBack: () => void; onNext: () => void }> = ({
           </svg>
           {t('back', 'Back')}
         </button>
-        <div className="text-[13px] text-customColor18 text-center">
+        <div className="text-[13px] text-customColor18 text-center mobile:order-last mobile:w-full">
           {t(
             'agent_settings_later',
             'More agents and full instructions are available under Settings > Agents / Dev'
@@ -673,7 +675,7 @@ const OnboardingStep2: FC<{ onBack: () => void; onNext: () => void }> = ({
         </div>
         <button
           onClick={onNext}
-          className="group flex items-center gap-[12px] bg-gradient-to-r from-[#622aff] to-[#8b5cf6] hover:from-[#7c3aff] hover:to-[#9d6eff] text-white font-semibold px-[32px] py-[14px] rounded-[12px] text-[16px] transition-all shadow-lg shadow-purple-500/25 hover:shadow-purple-500/40"
+          className="group flex items-center gap-[12px] bg-gradient-to-r from-[#622aff] to-[#8b5cf6] hover:from-[#7c3aff] hover:to-[#9d6eff] text-white font-semibold px-[32px] mobile:px-[18px] py-[14px] rounded-[12px] text-[16px] mobile:text-[15px] transition-all shadow-lg shadow-purple-500/25 hover:shadow-purple-500/40"
         >
           {t('continue_skip', 'Continue / Skip')}
           <svg
