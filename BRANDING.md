@@ -22,11 +22,31 @@ Docker images are built from, and they don't move under you mid-rebase.
 
 ```bash
 git fetch upstream --tags
-git tag -l | sort -V | tail -5          # pick the new release
-git rebase --onto vX.Y.Z $(git merge-base brand <previous-tag>) brand
-npm install && npm run build            # prove it still builds
+git tag -l 'v*' | sort -V | tail -5     # pick the new release
+scripts/update-upstream.sh vX.Y.Z       # builds brand-vX.Y.Z; brand is untouched
+pnpm install && pnpm run build          # prove it still builds, then check the app
+git branch -f brand brand-vX.Y.Z        # only once you are happy with it
 git push --force-with-lease origin brand
 ```
+
+`scripts/update-upstream.sh` does the rebase onto the release for you, on a new
+branch, and clears the conflicts that do not need a person:
+
+- **Translations** are merged key by key (`scripts/merge-translations.py`).
+  Upstream adds keys to every locale file each release, which a line merge
+  turns into a conflict every time. If upstream also reworded a key the brand
+  changed, it keeps the brand's value and stops so you can compare.
+- **git rerere** is switched on, so a conflict resolved once is replayed
+  automatically next release. The record lives in this clone's `.git/rr-cache`;
+  a fresh clone starts without it.
+
+It stops only for what needs judgement (a file upstream deleted, a hunk never
+seen before) and prints the exact `--continue` command to run after fixing it.
+That command points at a copy of the script inside `.git/update-upstream/`,
+because `scripts/` is itself a brand commit and is missing from the working
+tree until the rebase replays it. At the end it reports what affects deploys: a changed
+database schema, new dependencies, a new Node version, and any new UI text
+that still says "Postiz".
 
 Rebasing rather than merging means you resolve each conflict once instead of
 carrying it forward forever. `--force-with-lease` refuses to clobber work
